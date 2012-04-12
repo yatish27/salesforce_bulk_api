@@ -3,9 +3,9 @@ require 'net/https'
 require 'rubygems'
 require 'xmlsimple'
 require 'csv'
-require "salesforce_bulk/version"
-require 'salesforce_bulk/job'
-require 'salesforce_bulk/connection'
+require "salesforce_bulk_api/version"
+require 'salesforce_bulk_api/job'
+require 'salesforce_bulk_api/connection'
 module SalesforceBulkApi
   # Your code goes here...
   class Api
