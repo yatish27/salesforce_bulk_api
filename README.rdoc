@@ -1,4 +1,4 @@
-= salesforce-bulk-api
+= Salesforce-Bulk-Api
 
 ==Overview
 
@@ -10,19 +10,15 @@ Using this gem is simple and straight forward.
 
 To initialize:
 
-  require 'salesforce_bulk_api'
-  client = Databasedotcom::Client.new :client_id =>  $SFDC_APP_CONFIG["client_id"], :client_secret => $SFDC_APP_CONFIG["client_secret"]
-  client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
-  salesforce = SalesforceBulk::Api.new(client)
-
 Pl do check the entire documentation of the databasedotcom gem and it various ways of authentication
 Databasedotcom[https://github.com/heroku/databasedotcom]
 
+You can use username password combo,OmniAuth,Oauth2
 
-
-You can use username password combo
-You can use OmniAuth
-You can use Oauth2
+  require 'salesforce_bulk_api'
+  client = Databasedotcom::Client.new :client_id =>  $SFDC_APP_CONFIG["client_id"], :client_secret => $SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
+  client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
+  salesforce = SalesforceBulk::Api.new(client)
 
 Sample operations:
 
