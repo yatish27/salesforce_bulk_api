@@ -9,6 +9,11 @@ Salesforce bulk Api is a simple ruby gem for connecting to and using the Salesfo
 Using this gem is simple and straight forward.
 
 To initialize:
+  sudo gem install salesforce_bulk_api
+or add 
+  gem salesforce_bulk_api
+in your Gemfile  
+  
 
 Pl do check the entire documentation of the databasedotcom gem and it various ways of authentication
 Databasedotcom[https://github.com/heroku/databasedotcom]
