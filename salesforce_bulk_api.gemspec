@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.add_dependency(%q<oauth2>, ["0.4.1"])
   s.add_dependency(%q<databasedotcom>, [">= 0"])
   s.add_dependency(%q<json>, [">= 0"])
-
+  s.add_dependency(%q<xml_simple>, [">= 0"])
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
