@@ -13,7 +13,7 @@ module SalesforceBulkApi
     @@SALESFORCE_API_VERSION = '23.0'
 
     def initialize(client)
-      @connection = SalesforceBulk::Connection.new(@@SALESFORCE_API_VERSION,client)
+      @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
     end
 
     def upsert(sobject, records, external_field)
@@ -39,7 +39,7 @@ module SalesforceBulkApi
     #private
 
     def do_operation(operation, sobject, records, external_field)
-      job = SalesforceBulk::Job.new(operation, sobject, records, external_field, @connection)
+      job = SalesforceBulkApi::Job.new(operation, sobject, records, external_field, @connection)
 
       # TODO: put this in one function
       job_id = job.create_job()
