@@ -27,7 +27,7 @@ module SalesforceBulkApi
       headers = Hash['Content-Type' => 'application/xml; charset=utf-8']
 
       response = @@connection.post_xml(nil, path, xml, headers)
-      response_parsed = XmlSimple.xml_in(response)    
+      response_parsed = XmlSimple.xml_in(response)
       puts response
       @@job_id = response_parsed['id'][0]
     end
@@ -49,7 +49,7 @@ module SalesforceBulkApi
     def add_query
       path = "job/#{@@job_id}/batch/"
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
-      
+
       response = @@connection.post_xml(nil, path, @@records, headers)
       response_parsed = XmlSimple.xml_in(response)
 
@@ -65,7 +65,7 @@ module SalesforceBulkApi
         super_records<<@@records_dup.pop(10000)
       end
       super_records<<@@records_dup
-      
+
       super_records.each do|batch|
         xml = "#{@@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
         batch.each do |r|
@@ -76,13 +76,13 @@ module SalesforceBulkApi
           xml += "</sObject>"
         end
         xml += "</sObjects>"
-    
+
 
         path = "job/#{@@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @@connection.post_xml(nil, path, xml, headers)
         response_parsed = XmlSimple.xml_in(response)
-      
+
         @@batch_id = response_parsed['id'][0]
         puts @@batch_id
       end
@@ -101,7 +101,6 @@ module SalesforceBulkApi
         response_parsed['state'][0]
       rescue Exception => e
         #puts "check: #{response_parsed.inspect}\n"
-
         nil
       end
     end

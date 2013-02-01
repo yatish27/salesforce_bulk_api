@@ -6,6 +6,7 @@ require 'csv'
 require "salesforce_bulk_api/version"
 require 'salesforce_bulk_api/job'
 require 'salesforce_bulk_api/connection'
+
 module SalesforceBulkApi
   # Your code goes here...
   class Api
@@ -23,7 +24,7 @@ module SalesforceBulkApi
     def update(sobject, records)
       self.do_operation('update', sobject, records, nil)
     end
-    
+
     def create(sobject, records)
       self.do_operation('insert', sobject, records, nil)
     end
@@ -43,16 +44,11 @@ module SalesforceBulkApi
 
       # TODO: put this in one function
       job_id = job.create_job()
-      if(operation == "query")
-        batch_id = job.add_query()
-      else
-        batch_id = job.add_batch()
-      end
+      batch_id = operation == "query" ? job.add_query() : job.add_batch()
       job.close_job()
 
       while true
         state = job.check_batch_status()
-        #puts "\nstate is #{state}\n"
         if state != "Queued" && state != "InProgress"
           break
         end
@@ -64,10 +60,6 @@ module SalesforceBulkApi
       else
         return "error"
       end
-
     end
-
   end  # End class
 end
-
-
