@@ -15,10 +15,13 @@ or add
 in your Gemfile
 
 
-Pl do check the entire documentation of the databasedotcom gem and it various ways of authentication
+Please do check the entire documentation of the databasedotcom gem and it various ways of authentication
 Databasedotcom[https://github.com/heroku/databasedotcom]
 
-You can use username password combo,OmniAuth,Oauth2
+You can use username password combo, OmniAuth, Oauth2
+You can as many records possible in the Array. Governor limits are taken care of inside the gem.
+
+
 
   require 'salesforce_bulk_api'
   client = Databasedotcom::Client.new :client_id =>  $SFDC_APP_CONFIG["client_id"], :client_secret => $SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
