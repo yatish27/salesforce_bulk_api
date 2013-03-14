@@ -55,8 +55,9 @@ module SalesforceBulkApi
         sleep(2) # wait x seconds and check again
       end
 
-      if state == 'Completed'
+      if state['state'][0] == 'Completed'
         job.get_batch_result()
+        return state
       else
         return "error"
       end

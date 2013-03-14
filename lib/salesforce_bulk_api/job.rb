@@ -95,10 +95,10 @@ module SalesforceBulkApi
       response = @@connection.get_request(nil, path, headers)
       response_parsed = XmlSimple.xml_in(response)
 
-      puts response_parsed
+      # puts response_parsed
       begin
         #puts "check: #{response_parsed.inspect}\n"
-        response_parsed['state'][0]
+        response_parsed
       rescue Exception => e
         #puts "check: #{response_parsed.inspect}\n"
         nil
