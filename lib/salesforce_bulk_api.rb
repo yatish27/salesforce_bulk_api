@@ -49,7 +49,7 @@ module SalesforceBulkApi
 
       while true
         state = job.check_batch_status()
-        if state != "Queued" && state != "InProgress"
+        if state['state'][0] != "Queued" && state['state'][0] != "InProgress"
           break
         end
         sleep(2) # wait x seconds and check again
