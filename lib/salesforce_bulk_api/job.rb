@@ -97,11 +97,6 @@ module SalesforceBulkApi
         end
         xml += "</sObjects>"
 
-
-        puts 'XMLXMXLXMLXMLXMLXMLXMXLMXL'
-        puts xml
-        puts 'XMLXMXLXMLXMLXMLXMLXMXLMXL'
-        
         path = "job/#{@@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @@connection.post_xml(nil, path, xml, headers)
