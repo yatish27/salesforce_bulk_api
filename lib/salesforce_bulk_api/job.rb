@@ -56,6 +56,20 @@ module SalesforceBulkApi
       @@batch_id = response_parsed['id'][0]
     end
 
+    def buildSObject(data)
+        xml = "<sObject>"
+        data.keys.each do |k|
+          if data[k].is_a?(Hash)
+            xml += "<#{k}>"
+            xml +=  buildSObject(data[k])
+            xml += "</#{k}>"
+          else 
+            xml += "<#{k}>#{data[k]}</#{k}>"
+          end
+        end
+        xml += "</sObject>"
+    end
+    
     def add_batch()
       keys = @@records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
@@ -71,13 +85,23 @@ module SalesforceBulkApi
         batch.each do |r|
           xml += "<sObject>"
           keys.each do |k|
-            xml += "<#{k}>#{r[k]}</#{k}>"
+           if r[k].is_a?(Hash)
+               xml += "<#{k}>"
+               xml +=  buildSObject(r[k])
+               xml += "</#{k}>"
+            else
+             xml += "<#{k}>#{r[k]}</#{k}>"
+            end
           end
           xml += "</sObject>"
         end
         xml += "</sObjects>"
 
 
+        puts 'XMLXMXLXMLXMLXMLXMLXMXLMXL'
+        puts xml
+        puts 'XMLXMXLXMLXMLXMLXMLXMXLMXL'
+        
         path = "job/#{@@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @@connection.post_xml(nil, path, xml, headers)
