@@ -61,7 +61,7 @@ module SalesforceBulkApi
       headers = keys
       @@records_dup=@@records.clone
       super_records=[]
-      (@@records_dup.size/10000).times do
+      (@@records_dup.size/10000).to_i.times do
         super_records<<@@records_dup.pop(10000)
       end
       super_records<<@@records_dup
