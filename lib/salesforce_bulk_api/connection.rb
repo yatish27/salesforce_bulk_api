@@ -57,6 +57,7 @@ module SalesforceBulkApi
 
     def parse_instance()
       @instance=@server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.blank?
     end
 
   end
