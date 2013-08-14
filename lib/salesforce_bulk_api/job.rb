@@ -28,7 +28,6 @@ module SalesforceBulkApi
 
       response = @@connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
-      puts response
       @@job_id = response_parsed['id'][0]
     end
 
@@ -84,7 +83,6 @@ module SalesforceBulkApi
         response_parsed = XmlSimple.xml_in(response)
 
         @@batch_id = response_parsed['id'][0]
-        puts @@batch_id
       end
     end
 
@@ -95,12 +93,9 @@ module SalesforceBulkApi
       response = @@connection.get_request(nil, path, headers)
       response_parsed = XmlSimple.xml_in(response)
 
-      # puts response_parsed
       begin
-        #puts "check: #{response_parsed.inspect}\n"
         response_parsed
       rescue Exception => e
-        #puts "check: #{response_parsed.inspect}\n"
         nil
       end
     end
