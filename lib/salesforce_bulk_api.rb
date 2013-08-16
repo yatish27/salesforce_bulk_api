@@ -1,14 +1,14 @@
+require 'rubygems'
+require 'bundler'
+Bundler.require()
 require "salesforce_bulk_api/version"
 require 'net/https'
-require 'rubygems'
-require 'xmlsimple'
 require 'csv'
-require "salesforce_bulk_api/version"
 require 'salesforce_bulk_api/job'
 require 'salesforce_bulk_api/connection'
 
 module SalesforceBulkApi
-  # Your code goes here...
+  
   class Api
 
     @@SALESFORCE_API_VERSION = '23.0'
@@ -56,7 +56,7 @@ module SalesforceBulkApi
       end
 
       if state['state'][0] == 'Completed'
-        job.get_batch_result()
+        state.merge!(job.get_batch_result())
         return state
       else
         return "error"
