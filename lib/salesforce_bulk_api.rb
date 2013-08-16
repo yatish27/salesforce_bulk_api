@@ -3,6 +3,7 @@ require 'bundler'
 Bundler.require()
 require "salesforce_bulk_api/version"
 require 'net/https'
+require 'xmlsimple'
 require 'csv'
 require 'salesforce_bulk_api/job'
 require 'salesforce_bulk_api/connection'
