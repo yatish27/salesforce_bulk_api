@@ -114,6 +114,8 @@ module SalesforceBulkApi
         headers = Hash.new
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @@connection.get_request(nil, path, headers)
+        response_parsed = XmlSimple.xml_in(response)
+        results = response_parsed['records']
       end
 
 

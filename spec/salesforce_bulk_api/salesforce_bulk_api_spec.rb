@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'yaml'
 require 'databasedotcom'
 
@@ -29,11 +30,27 @@ describe SalesforceBulkApi do
   
   describe 'query' do
   
-    it 'returns the query results' do
-      res = @api.query('Account', 'SELECT * From Account')
-      res.records.should_be > 1
+    context 'when there are results' do
+      it 'returns the query results' do
+        res = @api.query('Account', 'SELECT id From Account')
+        res[:records].length.should > 1
+      end
     end
   
+    context 'whene there are no results' do
+      it 'returns nil' do
+        res = @api.query('Account', "SELECT id From Account WHERE Name = 'ABC'")
+        res[:records].should eq nil
+      end
+    end
+    
+    context 'when there is an error' do
+      it 'returns nil' do
+        res = @api.query('Account', "SELECT id From Account WHERE Name = ''ABC'")
+        res[:records].should eq nil
+      end
+    end
+    
   end
 
 end

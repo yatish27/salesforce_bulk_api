@@ -57,10 +57,10 @@ module SalesforceBulkApi
       end
 
       if state['state'][0] == 'Completed'
-        state.merge!(job.get_batch_result())
+        state.merge!({:records => job.get_batch_result()})
         return state
       else
-        return "error"
+        return state
       end
     end
   end  # End class
