@@ -70,7 +70,7 @@ module SalesforceBulkApi
         batch.each do |r|
           xml += "<sObject>"
           keys.each do |k|
-            xml += "<#{k}>#{r[k]}</#{k}>"
+            xml += "<#{k}>#{r[k]}</#{k}>" unless r[k].blank?
           end
           xml += "</sObject>"
         end
@@ -114,6 +114,8 @@ module SalesforceBulkApi
         headers = Hash.new
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @@connection.get_request(nil, path, headers)
+        response_parsed = XmlSimple.xml_in(response)
+        results = response_parsed['records']
       end
 
 

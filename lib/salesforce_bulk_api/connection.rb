@@ -25,9 +25,7 @@ module SalesforceBulkApi
       @session_id=@client.oauth_token
       @server_url=@client.instance_url
       @instance = parse_instance()
-      puts @instance
       @@INSTANCE_HOST = "#{@instance}.salesforce.com"
-      puts @@INSTANCE_HOST
     end
 
     def post_xml(host, path, xml, headers)
