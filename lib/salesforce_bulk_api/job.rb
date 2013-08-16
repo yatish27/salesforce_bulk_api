@@ -70,7 +70,7 @@ module SalesforceBulkApi
         batch.each do |r|
           xml += "<sObject>"
           keys.each do |k|
-            xml += "<#{k}>#{r[k]}</#{k}>"
+            xml += "<#{k}>#{r[k]}</#{k}>" unless r[k].blank?
           end
           xml += "</sObject>"
         end
