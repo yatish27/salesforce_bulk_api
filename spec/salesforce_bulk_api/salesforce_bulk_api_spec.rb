@@ -32,8 +32,9 @@ describe SalesforceBulkApi do
   
     context 'when there are results' do
       it 'returns the query results' do
-        res = @api.query('Account', 'SELECT id From Account')
+        res = @api.query('Account', 'SELECT id, Name From Account LIMIT 3')
         res[:records].length.should > 1
+        res[:records][0]['Id'].should_not be_nil
       end
     end
   
