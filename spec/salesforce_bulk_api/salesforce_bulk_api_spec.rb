@@ -14,8 +14,6 @@ describe SalesforceBulkApi do
 
   describe 'upsert' do
     pending
-    res = @api.upsert('Account', {:Id => 'Test_ID_1', :another_field => nil}, 'Id')
-    
   end
 
   describe 'update' do

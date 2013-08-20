@@ -70,12 +70,17 @@ module SalesforceBulkApi
         batch.each do |r|
           xml += "<sObject>"
           keys.each do |k|
-            xml += "<#{k}>#{r[k]}</#{k}>" unless r[k].blank?
+            unless r[k].blank?
+              if r[k].is_a? String
+                xml += "<#{k}>'#{r[k]}'</#{k}>"
+              else
+                xml += "<#{k}>#{r[k]}</#{k}>"
+              end
+            end
           end
           xml += "</sObject>"
         end
         xml += "</sObjects>"
-        puts xml
 
         path = "job/#{@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
