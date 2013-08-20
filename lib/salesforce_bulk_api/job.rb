@@ -110,7 +110,8 @@ module SalesforceBulkApi
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
 
       response = @connection.get_request(nil, path, headers)
-
+      puts response
+      
       if(@operation == "query") # The query op requires us to do another request to get the results
         response_parsed = XmlSimple.xml_in(response)
         result_id = response_parsed["result"][0]
