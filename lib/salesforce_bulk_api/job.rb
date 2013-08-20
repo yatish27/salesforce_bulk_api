@@ -72,7 +72,7 @@ module SalesforceBulkApi
           keys.each do |k|
             unless r[k].blank?
               if r[k].is_a? String
-                xml += "<#{k}>'#{r[k]}'</#{k}>"
+                xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
               else
                 xml += "<#{k}>#{r[k]}</#{k}>"
               end
