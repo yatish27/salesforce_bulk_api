@@ -56,16 +56,17 @@ module SalesforceBulkApi
     end
 
     def add_batch()
+      raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
-      @records_dup=@records.clone
-      super_records=[]
+      @records_dup = @records.clone
+      super_records = []
       (@records_dup.size/10000).to_i.times do
-        super_records<<@records_dup.pop(10000)
+        super_records << @records_dup.pop(10000)
       end
-      super_records<<@records_dup
+      super_records << @records_dup
 
-      super_records.each do|batch|
+      super_records.each do |batch|
         xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
         batch.each do |r|
           xml += "<sObject>"
@@ -110,12 +111,11 @@ module SalesforceBulkApi
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
 
       response = @connection.get_request(nil, path, headers)
-      puts response
-      
-      if(@operation == "query") # The query op requires us to do another request to get the results
-        response_parsed = XmlSimple.xml_in(response)
-        result_id = response_parsed["result"][0]
+      response_parsed = XmlSimple.xml_in(response)
+      results = response_parsed['result'] unless @operation == 'query'
 
+      if(@operation == 'query') # The query op requires us to do another request to get the results
+        result_id = response_parsed["result"][0]
         path = "job/#{@job_id}/batch/#{@batch_id}/result/#{result_id}"
         headers = Hash.new
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
@@ -123,8 +123,7 @@ module SalesforceBulkApi
         response_parsed = XmlSimple.xml_in(response)
         results = response_parsed['records']
       end
-
-
+      results
     end
 
   end

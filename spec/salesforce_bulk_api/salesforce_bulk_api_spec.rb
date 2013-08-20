@@ -13,7 +13,21 @@ describe SalesforceBulkApi do
   end
 
   describe 'upsert' do
-    pending
+    
+    context 'when not passed get_result' do
+      it 'doesnt return the results array' do
+        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id')
+        res['result'].should be_nil
+      end
+    end
+    
+    context 'when passed get_result = true' do
+      it 'returns the results array' do
+        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id', true)
+        res['result'].is_a? Array
+        res['result'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
+      end
+    end
   end
 
   describe 'update' do
@@ -32,23 +46,23 @@ describe SalesforceBulkApi do
   
     context 'when there are results' do
       it 'returns the query results' do
-        res = @api.query('Account', 'SELECT id, Name From Account LIMIT 3')
-        res[:records].length.should > 1
-        res[:records][0]['Id'].should_not be_nil
+        res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE '%Test%'")
+        res['result'].length.should > 1
+        res['result'][0]['Id'].should_not be_nil
       end
     end
   
-    context 'whene there are no results' do
+    context 'when there are no results' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = 'ABC'")
-        res[:records].should eq nil
+        res['result'].should eq nil
       end
     end
     
     context 'when there is an error' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = ''ABC'")
-        res[:records].should eq nil
+        res['result'].should eq nil
       end
     end
     

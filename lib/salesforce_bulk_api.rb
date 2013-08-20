@@ -18,20 +18,20 @@ module SalesforceBulkApi
       @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
     end
 
-    def upsert(sobject, records, external_field)
-      self.do_operation('upsert', sobject, records, external_field)
+    def upsert(sobject, records, external_field, get_result = false)
+      self.do_operation('upsert', sobject, records, external_field, get_result)
     end
 
-    def update(sobject, records)
-      self.do_operation('update', sobject, records, nil)
+    def update(sobject, records, get_result = false)
+      self.do_operation('update', sobject, records, nil, get_result)
     end
 
-    def create(sobject, records)
-      self.do_operation('insert', sobject, records, nil)
+    def create(sobject, records, get_result = false)
+      self.do_operation('insert', sobject, records, nil, get_result)
     end
 
-    def delete(sobject, records)
-      self.do_operation('delete', sobject, records, nil)
+    def delete(sobject, records, get_result = false)
+      self.do_operation('delete', sobject, records, nil, get_result)
     end
 
     def query(sobject, query)
@@ -40,7 +40,7 @@ module SalesforceBulkApi
 
     #private
 
-    def do_operation(operation, sobject, records, external_field)
+    def do_operation(operation, sobject, records, external_field, get_result = false)
       job = SalesforceBulkApi::Job.new(operation, sobject, records, external_field, @connection)
 
       # TODO: put this in one function
@@ -57,7 +57,7 @@ module SalesforceBulkApi
       end
 
       if state['state'][0] == 'Completed'
-        state.merge!({:records => job.get_batch_result()})
+        state.merge!({'result' => job.get_batch_result()}) if (operation == 'query' || get_result == true)
         return state
       else
         return state
