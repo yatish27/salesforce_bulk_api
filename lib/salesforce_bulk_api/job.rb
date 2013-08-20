@@ -75,7 +75,7 @@ module SalesforceBulkApi
           xml += "</sObject>"
         end
         xml += "</sObjects>"
-        puts xml
+        pp xml
 
         path = "job/#{@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
