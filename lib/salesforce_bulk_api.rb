@@ -18,39 +18,35 @@ module SalesforceBulkApi
       @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
     end
 
-    def upsert(sobject, records, external_field, get_response = false)
-      self.do_operation('upsert', sobject, records, external_field, get_response)
+    def upsert(sobject, records, external_field, get_response = false, batch_size = 10000, timeout = 1500)
+      self.do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size)
     end
 
-    def update(sobject, records, get_response = false)
-      self.do_operation('update', sobject, records, nil, get_response)
+    def update(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
+      self.do_operation('update', sobject, records, nil, get_response, timeout, batch_size)
     end
 
-    def create(sobject, records, get_response = false)
-      self.do_operation('insert', sobject, records, nil, get_response)
+    def create(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
+      self.do_operation('insert', sobject, records, nil, get_response, timeout, batch_size)
     end
 
-    def delete(sobject, records, get_response = false)
-      self.do_operation('delete', sobject, records, nil, get_response)
+    def delete(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
+      self.do_operation('delete', sobject, records, nil, get_response, timeout, batch_size)
     end
 
-    def query(sobject, query)
-      self.do_operation('query', sobject, query, nil)
+    def query(sobject, query, batch_size = 10000, timeout = 1500)
+      self.do_operation('query', sobject, query, nil, true, timeout, batch_size)
     end
 
     #private
 
-    def do_operation(operation, sobject, records, external_field, get_response = false, timeout = 1500)
+    def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size)
       job = SalesforceBulkApi::Job.new(operation, sobject, records, external_field, @connection)
 
-      # TODO: put this in one function
       job_id = job.create_job()
-      batch_id = operation == "query" ? job.add_query() : job.add_batches()
+      operation == "query" ? job.add_query() : job.add_batches(batch_size)
       response = job.close_job
-
-      if operation == 'query' or get_response == true
-        response = job.get_job_result(get_response, timeout)
-      end
+      response.merge!({'batches' => job.get_job_result(get_response, timeout)}) if get_response == true
       response
     end
   end  # End class

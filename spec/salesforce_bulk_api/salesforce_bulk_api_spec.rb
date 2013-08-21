@@ -15,23 +15,58 @@ describe SalesforceBulkApi do
   describe 'upsert' do
     
     context 'when not passed get_result' do
-      it 'doesnt return the results array' do
+      it "doesn't return the batches array" do
         res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id')
-        res['result'].should be_nil
+        res['batches'].should be_nil
       end
     end
     
     context 'when passed get_result = true' do
-      it 'returns the results array' do
+      it 'returns the batches array' do
         res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id', true)
-        res['result'].is_a? Array
-        res['result'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
+        res['batches'][0]['response'].is_a? Array
+        res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
       end
     end
   end
 
   describe 'update' do
-    pending
+    context 'when there is not an error' do
+      context 'when not passed get_result' do
+        it "doesnt return the batches array" do
+          res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}])
+          res['batches'].should be_nil
+        end
+      end
+  
+      context 'when passed get_result = true' do
+        it 'returns the batches array' do
+          res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], true)
+          res['batches'][0]['response'].is_a? Array
+          res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
+        end
+      end
+    end
+    
+    context 'when there is an error' do
+      context 'when not passed get_result' do
+        it "doesn't return the results array" do
+          res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'},{:Id => 'abc123', :Website => 'www.test.com'}])
+          res['batches'].should be_nil
+        end
+      end
+  
+      context 'when passed get_result = true with batches' do
+        it 'returns the results array' do
+          res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => 'abc123', :Website => 'www.test.com'}], true, 2)
+          #puts res[0]['response']
+          #puts res[1]['response']
+          res['batches'][0]['response'].should eq([{"id"=>["0013000000ymMBhAAM"], "success"=>["true"], "created"=>["false"]}, {"errors"=>[{"fields"=>["Id"], "message"=>["Account ID: id value of incorrect type: abc123"], "statusCode"=>["MALFORMED_ID"]}], "success"=>["false"], "created"=>["false"]}])
+          res['batches'][1]['response'].should eq([{"id"=>["0013000000ymMBhAAM"], "success"=>["true"], "created"=>["false"]},{"id"=>["0013000000ymMBhAAM"], "success"=>["true"], "created"=>["false"]}])
+        end
+      end
+    end
+    
   end
 
   describe 'create' do
@@ -46,16 +81,16 @@ describe SalesforceBulkApi do
   
     context 'when there are results' do
       it 'returns the query results' do
-        res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE '%Test%'")
-        res['result'].length.should > 1
-        res['result'][0]['Id'].should_not be_nil
+        res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE 'Test%'")
+        res['batches'][0]['response'].length.should > 1
+        res['batches'][0]['response'][0]['Id'].should_not be_nil
       end
       context 'and there are multiple batches' do
         it 'returns the query results in a merged hash' do
           pending 'need dev to create > 10k records in dev organization'
-          res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE '%Test%'")
-          res['result'].length.should > 1
-          res['result'][0]['Id'].should_not be_nil
+          res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE 'Test%'")
+          res['batches'][0]['response'].length.should > 1
+          res['batches'][0]['response'][0]['Id'].should_not be_nil
         end
       end
     end
@@ -63,14 +98,14 @@ describe SalesforceBulkApi do
     context 'when there are no results' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = 'ABC'")
-        res['result'].should eq nil
+        res['batches'][0]['response'].should eq nil
       end
     end
     
     context 'when there is an error' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = ''ABC'")
-        res['result'].should eq nil
+        res['batches'][0]['response'].should eq nil
       end
     end
     
