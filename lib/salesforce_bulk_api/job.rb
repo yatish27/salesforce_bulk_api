@@ -72,7 +72,7 @@ module SalesforceBulkApi
         batch.each do |r|
           xml += "<sObject>"
           keys.each do |k|
-            nil
+            puts k
             unless r[k].blank?
               if r[k].respond_to?(:encode)
                 xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
