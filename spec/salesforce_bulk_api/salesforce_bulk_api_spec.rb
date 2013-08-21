@@ -50,6 +50,14 @@ describe SalesforceBulkApi do
         res['result'].length.should > 1
         res['result'][0]['Id'].should_not be_nil
       end
+      context 'and there are multiple batches' do
+        it 'returns the query results in a merged hash' do
+          pending 'need dev to create > 10k records in dev organization'
+          res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE '%Test%'")
+          res['result'].length.should > 1
+          res['result'][0]['Id'].should_not be_nil
+        end
+      end
     end
   
     context 'when there are no results' do
