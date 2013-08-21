@@ -72,7 +72,7 @@ module SalesforceBulkApi
           xml += "<sObject>"
           keys.each do |k|
             unless r[k].blank?
-              if r[k].is_a? String
+              if r[k].respond_to?(:encode)
                 xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
               else
                 xml += "<#{k}>#{r[k]}</#{k}>"
