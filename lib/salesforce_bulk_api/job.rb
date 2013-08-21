@@ -88,8 +88,10 @@ module SalesforceBulkApi
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @connection.post_xml(nil, path, xml, headers)
         response_parsed = XmlSimple.xml_in(response)
-
-        @batch_id = response_parsed['id'][0]
+        
+        if response_parsed['id']
+          @batch_id = response_parsed['id'][0]
+        end
       end
     end
 
