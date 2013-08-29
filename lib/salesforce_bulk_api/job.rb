@@ -56,7 +56,7 @@ module SalesforceBulkApi
       @batch_ids << response_parsed['id'][0]
     end
 
-    def add_batches(batch_size, send_nulls = false)
+    def add_batches(batch_size, send_nulls)
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
@@ -68,46 +68,52 @@ module SalesforceBulkApi
       super_records << @records_dup unless @records_dup.empty?
 
       super_records.each do |batch|
-        xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
-        batch.each do |r|
-          fields_to_null = []
-          object_keys = ''
-          keys.each do |k|
-            unless r[k].to_s.empty? && !send_nulls
-              if r[k].respond_to?(:encode)
-                object_keys += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
-              else
-                object_keys += "<#{k}>#{r[k]}</#{k}>"
-              end
-            end
-            if r[k].to_s.empty? && send_nulls
-              fields_to_null << k
-            end
-          end
-          xml += "<sObject "
-          if send_nulls
-            xml += "fieldsToNull=\"["
-            fields_to_null = ['Website', 'Other_Phone__c']
-            xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
-            xml.slice!(xml.length - 1)
-            xml += "]\""
-          end
-          xml += ">"
-          xml += object_keys
-          xml += "</sObject>"
-        end
-        xml += "</sObjects>"
-        
-        path = "job/#{@job_id}/batch/"
-        headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
-        response = @connection.post_xml(nil, path, xml, headers)
-        response_parsed = XmlSimple.xml_in(response)
-        
-
-        @batch_ids << response_parsed['id'][0] if response_parsed['id']
+        @batch_ids << add_batch(keys, batch, send_nulls)
       end
     end
-
+    
+    def add_batch(keys, batch, send_nulls)
+      xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
+      batch.each do |r|
+        xml += create_sobject(keys, r, send_nulls)
+      end
+      xml += "</sObjects>"
+      path = "job/#{@job_id}/batch/"
+      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      response = @connection.post_xml(nil, path, xml, headers)
+      response_parsed = XmlSimple.xml_in(response)
+      response_parsed['id'][0] if response_parsed['id']
+    end
+    
+    def create_sobject(keys, r, send_nulls)
+      sobject_xml = ''
+      object_keys = ''
+      fields_to_null = []
+      keys.each do |k|
+        object_keys += "<#{k}>"
+        unless r[k].to_s.empty?
+          if r[k].respond_to?(:encode)
+            object_keys += r[k].encode(:xml => :text)
+          end
+        end
+        object_keys += "</#{k}>"
+        if r[k].to_s.empty? && send_nulls
+          fields_to_null << k
+        end
+      end
+      sobject_xml += "<sObject "
+      if send_nulls
+        sobject_xml += "fieldsToNull=\"["
+        sobject_xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
+        sobject_xml.slice!(sobject_xml.length - 1)
+        sobject_xml += "]\""
+      end
+      sobject_xml += ">"
+      sobject_xml += object_keys
+      sobject_xml += "</sObject>"
+      sobject_xml
+    end
+    
     def check_job_status
       path = "job/#{@job_id}"
       headers = Hash.new

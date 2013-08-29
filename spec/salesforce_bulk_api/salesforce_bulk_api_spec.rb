@@ -30,12 +30,12 @@ describe SalesforceBulkApi do
     end
     
     context 'when passed send_nulls = true' do
-      it 'sets the nil attributes to NULL' do
+      it 'sets the nil and empty attributes to NULL' do
         @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'abc123', :Other_Phone__c => '5678'}], 'Id', true)
         res = @api.query('Account', "SELECT Website, Other_Phone__c From Account WHERE Id = '0013000000ymMBh'")
         res['batches'][0]['response'][0]['Website'][0].should eq 'abc123'
         res['batches'][0]['response'][0]['Other_Phone__c'][0].should eq '5678'
-        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => nil, :Other_Phone__c => nil}], 'Id', true, true)
+        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => '', :Other_Phone__c => nil}], 'Id', true, true)
         res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
         res = @api.query('Account', "SELECT Website, Other_Phone__c From Account WHERE Id = '0013000000ymMBh'")
         res['batches'][0]['response'][0]['Website'][0].should eq({"xsi:nil" => "true"})
