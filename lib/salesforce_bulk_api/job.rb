@@ -71,29 +71,32 @@ module SalesforceBulkApi
         xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
         batch.each do |r|
           fields_to_null = []
+          object_keys = ''
+          keys.each do |k|
+            unless r[k].to_s.empty? && !send_nulls
+              if r[k].respond_to?(:encode)
+                object_keys += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
+              else
+                object_keys += "<#{k}>#{r[k]}</#{k}>"
+              end
+            end
+            if r[k].to_s.empty? && send_nulls
+              fields_to_null << k
+            end
+          end
           xml += "<sObject "
           if send_nulls
             xml += "fieldsToNull=\"["
             fields_to_null = ['Website', 'Other_Phone__c']
             xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
             xml.slice!(xml.length - 1)
-            xml += "]\">"
+            xml += "]\""
           end
-          keys.each do |k|
-            #if !r[k].to_s.empty?
-              if r[k].respond_to?(:encode)
-                xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
-              else
-                xml += "<#{k}>#{r[k]}</#{k}>"
-              end
-            #else
-              #fields_to_null << k
-            #end
-          end
+          xml += ">"
+          xml += object_keys
           xml += "</sObject>"
         end
         xml += "</sObjects>"
-        puts xml
         
         path = "job/#{@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
