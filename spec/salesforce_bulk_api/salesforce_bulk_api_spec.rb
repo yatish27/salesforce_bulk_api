@@ -6,8 +6,8 @@ describe SalesforceBulkApi do
 
   before :each do
     auth_hash = YAML.load(File.read('auth_credentials.yml'))
-    @sf_client = Databasedotcom::Client.new(:client_id => auth_hash['salesforce']['client_id'],
-                 :client_secret => auth_hash['salesforce']['client_secret'])
+    @sf_client = Databasedotcom::Client.new(:client_id     => auth_hash['salesforce']['client_id'],
+                                            :client_secret => auth_hash['salesforce']['client_secret'])
     @sf_client.authenticate(:username => auth_hash['salesforce']['user'], :password => auth_hash['salesforce']['passwordandtoken'])
     @api = SalesforceBulkApi::Api.new(@sf_client)
   end
