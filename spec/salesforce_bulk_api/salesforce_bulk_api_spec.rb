@@ -35,12 +35,13 @@ describe SalesforceBulkApi do
         res = @api.query('Account', "SELECT Website, Other_Phone__c From Account WHERE Id = '0013000000ymMBh'")
         res['batches'][0]['response'][0]['Website'][0].should eq 'abc123'
         res['batches'][0]['response'][0]['Other_Phone__c'][0].should eq '5678'
-        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => '', :Other_Phone__c => nil, :Gold_Star__c => false}], 'Id', true, true)
+        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => '', :Other_Phone__c => nil, :Gold_Star__c => false, :CRM_Last_Modified__c => nil}], 'Id', true, true)
         res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
-        res = @api.query('Account', "SELECT Website, Other_Phone__c, Gold_Star__c From Account WHERE Id = '0013000000ymMBh'")
+        res = @api.query('Account', "SELECT Website, Other_Phone__c, Gold_Star__c, CRM_Last_Modified__c From Account WHERE Id = '0013000000ymMBh'")
         res['batches'][0]['response'][0]['Website'][0].should eq({"xsi:nil" => "true"})
         res['batches'][0]['response'][0]['Other_Phone__c'][0].should eq({"xsi:nil" => "true"})
         res['batches'][0]['response'][0]['Gold_Star__c'][0].should eq('false')
+        res['batches'][0]['response'][0]['CRM_Last_Modified__c'][0].should eq({"xsi:nil" => "true"})
       end
     end
   end

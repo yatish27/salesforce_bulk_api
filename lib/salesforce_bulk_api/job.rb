@@ -71,7 +71,7 @@ module SalesforceBulkApi
     end
     
     def add_batch(keys, batch, send_nulls)
-      xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
+      xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
         xml += create_sobject(keys, r, send_nulls)
       end
@@ -84,32 +84,20 @@ module SalesforceBulkApi
     end
     
     def create_sobject(keys, r, send_nulls)
-      sobject_xml = ''
-      object_keys = ''
-      fields_to_null = []
+      sobject_xml = '<sObject>'
       keys.each do |k|
-        object_keys += "<#{k}>"
-        unless r[k].to_s.empty?
+        if !r[k].to_s.empty?
+          sobject_xml += "<#{k}>" 
           if r[k].respond_to?(:encode)
-            object_keys += r[k].encode(:xml => :text)
+            sobject_xml += r[k].encode(:xml => :text)
           else
-            object_keys += r[k].to_s
+            sobject_xml += r[k].to_s
           end
-        end
-        object_keys += "</#{k}>"
-        if r[k].to_s.empty? && send_nulls
-          fields_to_null << k
+          sobject_xml += "</#{k}>"
+        elsif send_nulls
+          sobject_xml += "<#{k} xsi:nil=\"true\"/>"
         end
       end
-      sobject_xml += "<sObject "
-      if send_nulls
-        sobject_xml += "fieldsToNull=\"["
-        sobject_xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
-        sobject_xml.slice!(sobject_xml.length - 1)
-        sobject_xml += "]\""
-      end
-      sobject_xml += ">"
-      sobject_xml += object_keys
       sobject_xml += "</sObject>"
       sobject_xml
     end
