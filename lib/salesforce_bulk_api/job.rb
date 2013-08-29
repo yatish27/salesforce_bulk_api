@@ -56,7 +56,7 @@ module SalesforceBulkApi
       @batch_ids << response_parsed['id'][0]
     end
 
-    def add_batches(batch_size)
+    def add_batches(batch_size, send_nulls = false)
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
@@ -70,18 +70,31 @@ module SalesforceBulkApi
       super_records.each do |batch|
         xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
         batch.each do |r|
-          xml += "<sObject>"
+          fields_to_null = []
+          xml += "<sObject "
+          if send_nulls
+            xml += "fieldsToNull=\"["
+            fields_to_null = ['Website', 'Other_Phone__c']
+            xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
+            xml.slice!(xml.length - 1)
+            xml += "]\">"
+          end
           keys.each do |k|
-            if !r[k].empty? && r[k].respond_to?(:encode)
-              xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
-            else
-              xml += "<#{k}>#{r[k]}</#{k}>"
-            end
+            #if !r[k].to_s.empty?
+              if r[k].respond_to?(:encode)
+                xml += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
+              else
+                xml += "<#{k}>#{r[k]}</#{k}>"
+              end
+            #else
+              #fields_to_null << k
+            #end
           end
           xml += "</sObject>"
         end
         xml += "</sObjects>"
-
+        puts xml
+        
         path = "job/#{@job_id}/batch/"
         headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
         response = @connection.post_xml(nil, path, xml, headers)

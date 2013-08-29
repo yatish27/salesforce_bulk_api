@@ -28,6 +28,17 @@ describe SalesforceBulkApi do
         res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
       end
     end
+    
+    context 'when passed send_nulls = true', :focus => true do
+      it 'adds fieldsToNull property' do
+        expected_xml = "<?xml version=\"1.0\" encoding=\"utf-8\" ?><sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\"><sObject fieldsToNull=\"['Website','Other_Phone__c']\"><Id>0013000000ymMBh</Id><Website></Website><Other_Phone__c></Other_Phone__c></sObject></sObjects>"
+        @api.instance_variable_get(:@connection).should_receive(:post_xml).with(nil, "job", "<?xml version=\"1.0\" encoding=\"utf-8\" ?><jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\"><operation>upsert</operation><object>Account</object><externalIdFieldName>Id</externalIdFieldName><contentType>XML</contentType></jobInfo>", {"Content-Type"=>"application/xml; charset=utf-8"})
+        XmlSimple.stub(:xml_in).and_return({'id' => ["750a0000001UizgAAC"]})
+        res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => nil, :Other_Phone__c => nil}], 'Id', true, true)
+        puts res
+        res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
+      end
+    end
   end
 
   describe 'update' do
