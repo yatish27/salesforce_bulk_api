@@ -14,7 +14,10 @@ module SalesforceBulkApi
 
     end
 
-    def create_job()
+    def create_job(batch_size, send_nulls, no_null_list)
+      @batch_size = batch_size
+      @send_nulls = send_nulls
+      @no_null_list = no_null_list
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
@@ -54,26 +57,26 @@ module SalesforceBulkApi
       @batch_ids << response_parsed['id'][0]
     end
 
-    def add_batches(batch_size, send_nulls)
+    def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
       @records_dup = @records.clone
       super_records = []
-      (@records_dup.size/batch_size).to_i.times do
-        super_records << @records_dup.pop(batch_size)
+      (@records_dup.size/@batch_size).to_i.times do
+        super_records << @records_dup.pop(@batch_size)
       end
       super_records << @records_dup unless @records_dup.empty?
 
       super_records.each do |batch|
-        @batch_ids << add_batch(keys, batch, send_nulls)
+        @batch_ids << add_batch(keys, batch)
       end
     end
     
-    def add_batch(keys, batch, send_nulls)
+    def add_batch(keys, batch)
       xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
-        xml += create_sobject(keys, r, send_nulls)
+        xml += create_sobject(keys, r)
       end
       xml += "</sObjects>"
       path = "job/#{@job_id}/batch/"
@@ -83,7 +86,7 @@ module SalesforceBulkApi
       response_parsed['id'][0] if response_parsed['id']
     end
     
-    def create_sobject(keys, r, send_nulls)
+    def create_sobject(keys, r)
       sobject_xml = '<sObject>'
       keys.each do |k|
         if !r[k].to_s.empty?
@@ -94,7 +97,7 @@ module SalesforceBulkApi
             sobject_xml += r[k].to_s
           end
           sobject_xml += "</#{k}>"
-        elsif send_nulls
+        elsif @send_nulls && !@no_null_list.include?(k)
           sobject_xml += "<#{k} xsi:nil=\"true\"/>"
         end
       end
