@@ -1,4 +1,5 @@
 module SalesforceBulkApi
+require 'timeout'
 
   class Connection
 
@@ -34,7 +35,19 @@ module SalesforceBulkApi
         headers['X-SFDC-Session'] = @session_id;
         path = "#{@@PATH_PREFIX}#{path}"
       end
-      https(host).post(path, xml, headers).body
+      i = 0
+      begin
+        https(host).post(path, xml, headers).body
+      rescue
+        i += 1
+        if i < 3
+          puts "Request fail #{i}: Retrying #{path}"
+          retry
+        else
+          puts "FATAL: Request to #{path} failed three times."
+          raise
+        end
+      end
     end
 
     def get_request(host, path, headers)

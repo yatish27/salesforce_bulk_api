@@ -108,14 +108,15 @@ module SalesforceBulkApi
     def check_job_status
       path = "job/#{@job_id}"
       headers = Hash.new
-
       response = @connection.get_request(nil, path, headers)
 
       begin
         response_parsed = XmlSimple.xml_in(response) if response
         response_parsed
       rescue StandardError => e
-        nil
+        puts "Error parsing XML response for #{@job_id}"
+        puts e
+        puts e.backtrace
       end
     end
     
@@ -129,29 +130,37 @@ module SalesforceBulkApi
         response_parsed = XmlSimple.xml_in(response) if response
         response_parsed
       rescue StandardError => e
-        nil
+        puts "Error parsing XML response for #{@job_id}, batch #{batch_id}"
+        puts e
+        puts e.backtrace
       end
     end
     
     def get_job_result(return_result, timeout)
       # timeout is in seconds
-      state = []
-      Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
-        while true
-          if self.check_job_status['state'][0] == 'Closed'
-            @batch_ids.each do |batch_id|
-              batch_state = self.check_batch_status(batch_id)
-              if batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
-                state << (batch_state)
-                @batch_ids.delete(batch_id)
+      begin
+        state = []
+        Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
+          while true
+            if self.check_job_status['state'][0] == 'Closed'
+              @batch_ids.each do |batch_id|
+                batch_state = self.check_batch_status(batch_id)
+                if batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
+                  state << (batch_state)
+                  @batch_ids.delete(batch_id)
+                end
+                sleep(3) # wait x seconds and check again
               end
-              sleep(2) # wait x seconds and check again
+              break if @batch_ids.empty?
+            else
+              break
             end
-            break if @batch_ids.empty?
-          else
-            break
           end
         end
+      rescue SalesforceBulkApi::JobTimeout => e
+        puts 'Timeout waiting for Salesforce to process job batches #{@batch_ids} of job #{@job_id}.'
+        puts e
+        raise
       end
       
       state.each_with_index do |batch_state, i|
