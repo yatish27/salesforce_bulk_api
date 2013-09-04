@@ -14,7 +14,10 @@ module SalesforceBulkApi
 
     end
 
-    def create_job()
+    def create_job(batch_size, send_nulls, no_null_list)
+      @batch_size = batch_size
+      @send_nulls = send_nulls
+      @no_null_list = no_null_list
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
@@ -42,8 +45,6 @@ module SalesforceBulkApi
 
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
-
-      #job_id = response_parsed['id'][0]
     end
 
     def add_query
@@ -56,69 +57,66 @@ module SalesforceBulkApi
       @batch_ids << response_parsed['id'][0]
     end
 
-    def add_batches(batch_size, send_nulls = false)
+    def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
       headers = keys
       @records_dup = @records.clone
       super_records = []
-      (@records_dup.size/batch_size).to_i.times do
-        super_records << @records_dup.pop(batch_size)
+      (@records_dup.size/@batch_size).to_i.times do
+        super_records << @records_dup.pop(@batch_size)
       end
       super_records << @records_dup unless @records_dup.empty?
 
       super_records.each do |batch|
-        xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
-        batch.each do |r|
-          fields_to_null = []
-          object_keys = ''
-          keys.each do |k|
-            unless r[k].to_s.empty? && !send_nulls
-              if r[k].respond_to?(:encode)
-                object_keys += "<#{k}>#{r[k].encode(:xml => :text)}</#{k}>"
-              else
-                object_keys += "<#{k}>#{r[k]}</#{k}>"
-              end
-            end
-            if r[k].to_s.empty? && send_nulls
-              fields_to_null << k
-            end
-          end
-          xml += "<sObject "
-          if send_nulls
-            xml += "fieldsToNull=\"["
-            fields_to_null = ['Website', 'Other_Phone__c']
-            xml += fields_to_null.inject('') {|memo, field| memo << "'#{field}',"}
-            xml.slice!(xml.length - 1)
-            xml += "]\""
-          end
-          xml += ">"
-          xml += object_keys
-          xml += "</sObject>"
-        end
-        xml += "</sObjects>"
-        
-        path = "job/#{@job_id}/batch/"
-        headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
-        response = @connection.post_xml(nil, path, xml, headers)
-        response_parsed = XmlSimple.xml_in(response)
-        
-
-        @batch_ids << response_parsed['id'][0] if response_parsed['id']
+        @batch_ids << add_batch(keys, batch)
       end
     end
-
+    
+    def add_batch(keys, batch)
+      xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+      batch.each do |r|
+        xml += create_sobject(keys, r)
+      end
+      xml += "</sObjects>"
+      path = "job/#{@job_id}/batch/"
+      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      response = @connection.post_xml(nil, path, xml, headers)
+      response_parsed = XmlSimple.xml_in(response)
+      response_parsed['id'][0] if response_parsed['id']
+    end
+    
+    def create_sobject(keys, r)
+      sobject_xml = '<sObject>'
+      keys.each do |k|
+        if !r[k].to_s.empty?
+          sobject_xml += "<#{k}>" 
+          if r[k].respond_to?(:encode)
+            sobject_xml += r[k].encode(:xml => :text)
+          else
+            sobject_xml += r[k].to_s
+          end
+          sobject_xml += "</#{k}>"
+        elsif @send_nulls && !@no_null_list.include?(k)
+          sobject_xml += "<#{k} xsi:nil=\"true\"/>"
+        end
+      end
+      sobject_xml += "</sObject>"
+      sobject_xml
+    end
+    
     def check_job_status
       path = "job/#{@job_id}"
       headers = Hash.new
-
       response = @connection.get_request(nil, path, headers)
 
       begin
         response_parsed = XmlSimple.xml_in(response) if response
         response_parsed
       rescue StandardError => e
-        nil
+        puts "Error parsing XML response for #{@job_id}"
+        puts e
+        puts e.backtrace
       end
     end
     
@@ -132,29 +130,37 @@ module SalesforceBulkApi
         response_parsed = XmlSimple.xml_in(response) if response
         response_parsed
       rescue StandardError => e
-        nil
+        puts "Error parsing XML response for #{@job_id}, batch #{batch_id}"
+        puts e
+        puts e.backtrace
       end
     end
     
     def get_job_result(return_result, timeout)
       # timeout is in seconds
-      state = []
-      Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
-        while true
-          if self.check_job_status['state'][0] == 'Closed'
-            @batch_ids.each do |batch_id|
-              batch_state = self.check_batch_status(batch_id)
-              if batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
-                state << (batch_state)
-                @batch_ids.delete(batch_id)
+      begin
+        state = []
+        Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
+          while true
+            if self.check_job_status['state'][0] == 'Closed'
+              @batch_ids.each do |batch_id|
+                batch_state = self.check_batch_status(batch_id)
+                if batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
+                  state << (batch_state)
+                  @batch_ids.delete(batch_id)
+                end
+                sleep(3) # wait x seconds and check again
               end
-              sleep(2) # wait x seconds and check again
+              break if @batch_ids.empty?
+            else
+              break
             end
-            break if @batch_ids.empty?
-          else
-            break
           end
         end
+      rescue SalesforceBulkApi::JobTimeout => e
+        puts 'Timeout waiting for Salesforce to process job batches #{@batch_ids} of job #{@job_id}.'
+        puts e
+        raise
       end
       
       state.each_with_index do |batch_state, i|
