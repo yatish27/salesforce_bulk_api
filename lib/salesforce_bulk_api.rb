@@ -18,12 +18,12 @@ module SalesforceBulkApi
       @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
     end
 
-    def upsert(sobject, records, external_field, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
-      self.do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size, send_nulls)
+    def upsert(sobject, records, external_field, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
+      self.do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size, send_nulls, no_null_list)
     end
 
-    def update(sobject, records, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
-      self.do_operation('update', sobject, records, nil, get_response, timeout, batch_size, send_nulls)
+    def update(sobject, records, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
+      self.do_operation('update', sobject, records, nil, get_response, timeout, batch_size, send_nulls, no_null_list)
     end
 
     def create(sobject, records, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
@@ -40,11 +40,11 @@ module SalesforceBulkApi
 
     #private
 
-    def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false)
+    def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false, no_null_list = [])
       job = SalesforceBulkApi::Job.new(operation, sobject, records, external_field, @connection)
 
-      job_id = job.create_job()
-      operation == "query" ? job.add_query() : job.add_batches(batch_size, send_nulls)
+      job_id = job.create_job(batch_size, send_nulls, no_null_list)
+      operation == "query" ? job.add_query() : job.add_batches()
       response = job.close_job
       response.merge!({'batches' => job.get_job_result(get_response, timeout)}) if get_response == true
       response
