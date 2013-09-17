@@ -1,5 +1,7 @@
 *.gem
 .bundle
 Gemfile.lock
+.ruby-gemset
+.ruby-version
 pkg/*
 auth_credentials.yml
