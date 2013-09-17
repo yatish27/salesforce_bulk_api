@@ -3,21 +3,20 @@ module SalesforceBulkApi
   class Job
 
     def initialize(operation, sobject, records, external_field, connection)
-
-      @operation = operation
-      @sobject = sobject
+      @operation      = operation
+      @sobject        = sobject
       @external_field = external_field
-      @records = records
-      @connection = connection
-      @batch_ids = []
-      @XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
-
+      @records        = records
+      @connection     = connection
+      @batch_ids      = []
+      @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
 
     def create_job(batch_size, send_nulls, no_null_list)
       @batch_size = batch_size
       @send_nulls = send_nulls
       @no_null_list = no_null_list
+      
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
@@ -44,7 +43,7 @@ module SalesforceBulkApi
       headers = Hash['Content-Type' => 'application/xml; charset=utf-8']
 
       response = @connection.post_xml(nil, path, xml, headers)
-      response_parsed = XmlSimple.xml_in(response)
+      XmlSimple.xml_in(response)
     end
 
     def add_query
@@ -60,8 +59,9 @@ module SalesforceBulkApi
     def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
-      headers = keys
+      
       @records_dup = @records.clone
+
       super_records = []
       (@records_dup.size/@batch_size).to_i.times do
         super_records << @records_dup.pop(@batch_size)
@@ -78,7 +78,7 @@ module SalesforceBulkApi
       batch.each do |r|
         xml += create_sobject(keys, r)
       end
-      xml += "</sObjects>"
+      xml += '</sObjects>'
       path = "job/#{@job_id}/batch/"
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
       response = @connection.post_xml(nil, path, xml, headers)
@@ -101,7 +101,7 @@ module SalesforceBulkApi
           sobject_xml += "<#{k} xsi:nil=\"true\"/>"
         end
       end
-      sobject_xml += "</sObject>"
+      sobject_xml += '</sObject>'
       sobject_xml
     end
     
