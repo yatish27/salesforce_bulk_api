@@ -2,38 +2,47 @@
 
 ## Overview
 
-Salesforce bulk Api is a simple ruby gem for connecting to and using the Salesforce Bulk API. It is actually a re-written code from salesforce_bulk[https://github.com/jorgevaldivia/salesforce_bulk].Written to suit many more other features as well.
+Salesforce bulk Api is a simple ruby gem for connecting to and using the Salesforce Bulk API. It is actually a re-written code from [salesforce_bulk](https://github.com/jorgevaldivia/salesforce_bulk).Written to suit many more other features as well.
 
 ## How to use
 
 Using this gem is simple and straight forward.
 
 To initialize:
-  `sudo gem install salesforce_bulk_api`
+
+   `sudo gem install salesforce_bulk_api`
+
 or add
-  `gem salesforce_bulk_api`
+
+   `gem salesforce_bulk_api`
+   
 in your Gemfile
 
 
 Please do check the entire documentation of the databasedotcom gem and it various ways of authentication
-Databasedotcom[https://github.com/heroku/databasedotcom]
+[Databasedotcom](https://github.com/heroku/databasedotcom)
 
 You can use username password combo, OmniAuth, Oauth2
 You can as many records possible in the Array. Governor limits are taken care of inside the gem.
 
 
-	
+```ruby
+
   require 'salesforce_bulk_api'
   client = Databasedotcom::Client.new :client_id =>  $SFDC_APP_CONFIG["client_id"], :client_secret => $SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
   client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
   salesforce = SalesforceBulkApi::Api.new(client)
+```
 
+```ruby
 Sample operations:
 
   # Insert/Create
-  new_account = Hash["name" => "Test Account", "type" => "Other"] # Add as many fields per record as needed.
+  # Add as many fields per record as needed.
+  new_account = Hash["name" => "Test Account", "type" => "Other"] 
   records_to_insert = Array.new
-  records_to_insert.push(new_account) # You can add as many records as you want here, just keep in mind that Salesforce has governor limits.
+  # You can add as many records as you want here, just keep in mind that Salesforce has governor limits.
+  records_to_insert.push(new_account) 
   result = salesforce.create("Account", records_to_insert)
   puts "result is: #{result.inspect}"
 
@@ -58,5 +67,7 @@ Sample operations:
   # Query
   res = salesforce.query("Account", "select id, name, createddate from Account limit 3") # We just need to pass the sobject name and the query string
 
+```
+
 ## Installation
-`sudo gem install salesforce_bulk_api`
+    sudo gem install salesforce_bulk_api
