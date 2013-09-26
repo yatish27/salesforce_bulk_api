@@ -1,4 +1,5 @@
 module SalesforceBulkApi
+require 'timeout'
 
   class Connection
 
@@ -25,9 +26,7 @@ module SalesforceBulkApi
       @session_id=@client.oauth_token
       @server_url=@client.instance_url
       @instance = parse_instance()
-      puts @instance
       @@INSTANCE_HOST = "#{@instance}.salesforce.com"
-      puts @@INSTANCE_HOST
     end
 
     def post_xml(host, path, xml, headers)
@@ -36,7 +35,19 @@ module SalesforceBulkApi
         headers['X-SFDC-Session'] = @session_id;
         path = "#{@@PATH_PREFIX}#{path}"
       end
-      https(host).post(path, xml, headers).body
+      i = 0
+      begin
+        https(host).post(path, xml, headers).body
+      rescue
+        i += 1
+        if i < 3
+          puts "Request fail #{i}: Retrying #{path}"
+          retry
+        else
+          puts "FATAL: Request to #{path} failed three times."
+          raise
+        end
+      end
     end
 
     def get_request(host, path, headers)
@@ -57,6 +68,8 @@ module SalesforceBulkApi
 
     def parse_instance()
       @instance=@server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.blank?
+      return @instance
     end
 
   end
