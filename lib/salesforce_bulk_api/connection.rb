@@ -23,8 +23,15 @@ require 'timeout'
     #private
 
     def login()
-      @session_id=@client.oauth_token
-      @server_url=@client.instance_url
+      client_type = @client.class.to_s
+      case client_type
+      when "Restforce::Data::Client"
+        @session_id=@client.options[:oauth_token]
+        @server_url=@client.options[:instance_url]
+      else
+        @session_id=@client.oauth_token
+        @server_url=@client.instance_url
+      end
       @instance = parse_instance()
       @@INSTANCE_HOST = "#{@instance}.salesforce.com"
     end
