@@ -14,7 +14,6 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "salesforce_bulk_api"
 
-  s.add_dependency(%q<databasedotcom>, [">= 0"])
   s.add_dependency(%q<json>, [">= 0"])
   s.add_dependency(%q<xml-simple>, [">= 0"])
   
