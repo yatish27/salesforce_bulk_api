@@ -30,9 +30,10 @@ You can use as many records possible in the Array. Governor limits are taken car
 
 
 	require 'salesforce_bulk_api'
-	client = Databasedotcom::Client.new :client_id =>  $SFDC_APP_CONFIG["client_id"], :client_secret => $SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
+	client = Databasedotcom::Client.new :client_id =>  SFDC_APP_CONFIG["client_id"], :client_secret => SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
 	client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
-	salesforce = SalesforceBulkApi::Api.new(client)
+
+    salesforce = SalesforceBulkApi::Api.new(client)
 
 OR
 
