@@ -16,7 +16,7 @@ module SalesforceBulkApi
       @batch_size = batch_size
       @send_nulls = send_nulls
       @no_null_list = no_null_list
-      
+
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
@@ -59,7 +59,7 @@ module SalesforceBulkApi
     def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
       keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
-      
+
       @records_dup = @records.clone
 
       super_records = []
@@ -72,7 +72,7 @@ module SalesforceBulkApi
         @batch_ids << add_batch(keys, batch)
       end
     end
-    
+
     def add_batch(keys, batch)
       xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
@@ -85,12 +85,12 @@ module SalesforceBulkApi
       response_parsed = XmlSimple.xml_in(response)
       response_parsed['id'][0] if response_parsed['id']
     end
-    
+
     def create_sobject(keys, r)
       sobject_xml = '<sObject>'
       keys.each do |k|
         if !r[k].to_s.empty?
-          sobject_xml += "<#{k}>" 
+          sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
             sobject_xml += r[k].encode(:xml => :text)
           else
@@ -104,7 +104,7 @@ module SalesforceBulkApi
       sobject_xml += '</sObject>'
       sobject_xml
     end
-    
+
     def check_job_status
       path = "job/#{@job_id}"
       headers = Hash.new
@@ -119,7 +119,7 @@ module SalesforceBulkApi
         puts e.backtrace
       end
     end
-    
+
     def check_batch_status(batch_id)
       path = "job/#{@job_id}/batch/#{batch_id}"
       headers = Hash.new
@@ -135,7 +135,7 @@ module SalesforceBulkApi
         puts e.backtrace
       end
     end
-    
+
     def get_job_result(return_result, timeout)
       # timeout is in seconds
       begin
@@ -162,7 +162,7 @@ module SalesforceBulkApi
         puts e
         raise
       end
-      
+
       state.each_with_index do |batch_state, i|
         if batch_state['state'][0] == 'Completed' && return_result == true
           state[i].merge!({'response' => self.get_batch_result(batch_state['id'][0])})
@@ -190,9 +190,9 @@ module SalesforceBulkApi
       end
       results
     end
-    
+
   end
-  
-  class JobTimeout < StandardError  
+
+  class JobTimeout < StandardError
   end
 end

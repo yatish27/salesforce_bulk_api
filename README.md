@@ -2,7 +2,7 @@
 
 ## Overview
 
-Salesforce bulk Api is a simple ruby gem for connecting to and using the Salesforce Bulk API. It is actually a re-written code from [salesforce_bulk](https://github.com/jorgevaldivia/salesforce_bulk).Written to suit many more other features as well.
+Salesforce bulk API is a simple ruby gem for connecting to and using the Salesforce Bulk API. It is actually a re-written code from [salesforce_bulk](https://github.com/jorgevaldivia/salesforce_bulk).Written to suit many more other features as well.
 
 ## How to use
 
@@ -23,9 +23,7 @@ Please do check the entire documentation of the databasedotcom gem and it variou
 [Databasedotcom](https://github.com/heroku/databasedotcom)
 
 You can use username password combo, OmniAuth, Oauth2
-You can as many records possible in the Array. Governor limits are taken care of inside the gem.
-
-
+You can use as many records possible in the Array. Governor limits are taken care of inside the gem.
 
 
 	require 'salesforce_bulk_api'
@@ -33,9 +31,8 @@ You can as many records possible in the Array. Governor limits are taken care of
 	client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
 	salesforce = SalesforceBulkApi::Api.new(client)
 
-
-
 Sample operations:
+
     # Insert/Create
     # Add as many fields per record as needed.
 	new_account = Hash["name" => "Test Account", "type" => "Other"] 
@@ -67,5 +64,9 @@ Sample operations:
 	res = salesforce.query("Account", "select id, name, createddate from Account limit 3") # We just need to pass the sobject name and the query string
 
 ## Installation
+
     sudo gem install salesforce_bulk_api
 	
+## Contribute
+
+Feel to fork and send Pull request

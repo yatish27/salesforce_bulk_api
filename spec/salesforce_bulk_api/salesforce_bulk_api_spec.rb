@@ -13,14 +13,14 @@ describe SalesforceBulkApi do
   end
 
   describe 'upsert' do
-    
+
     context 'when not passed get_result' do
       it "doesn't return the batches array" do
         res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id')
         res['batches'].should be_nil
       end
     end
-    
+
     context 'when passed get_result = true' do
       it 'returns the batches array' do
         res = @api.upsert('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], 'Id', true)
@@ -28,7 +28,7 @@ describe SalesforceBulkApi do
         res['batches'][0]['response'][0].should eq({'id'=>['0013000000ymMBhAAM'], 'success'=>['true'], 'created'=>['false']})
       end
     end
-    
+
     context 'when passed send_nulls = true' do
       it 'sets the nil and empty attributes to NULL' do
         @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'abc123', :Other_Phone__c => '5678', :Gold_Star__c => true}], true)
@@ -44,7 +44,7 @@ describe SalesforceBulkApi do
         res['batches'][0]['response'][0]['CRM_Last_Modified__c'][0].should eq({"xsi:nil" => "true"})
       end
     end
-    
+
     context 'when passed send_nulls = true and an array of fields not to null' do
       it 'sets the nil and empty attributes to NULL, except for those included in the list of fields to ignore' do
         @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'abc123', :Other_Phone__c => '5678', :Gold_Star__c => true}], true)
@@ -60,7 +60,7 @@ describe SalesforceBulkApi do
         res['batches'][0]['response'][0]['CRM_Last_Modified__c'][0].should eq({"xsi:nil" => "true"})
       end
     end
-    
+
   end
 
   describe 'update' do
@@ -71,7 +71,7 @@ describe SalesforceBulkApi do
           res['batches'].should be_nil
         end
       end
-  
+
       context 'when passed get_result = true' do
         it 'returns the batches array' do
           res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}], true)
@@ -80,7 +80,7 @@ describe SalesforceBulkApi do
         end
       end
     end
-    
+
     context 'when there is an error' do
       context 'when not passed get_result' do
         it "doesn't return the results array" do
@@ -88,7 +88,7 @@ describe SalesforceBulkApi do
           res['batches'].should be_nil
         end
       end
-  
+
       context 'when passed get_result = true with batches' do
         it 'returns the results array' do
           res = @api.update('Account', [{:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => '0013000000ymMBh', :Website => 'www.test.com'}, {:Id => 'abc123', :Website => 'www.test.com'}], true, false, [], 2)
@@ -97,7 +97,7 @@ describe SalesforceBulkApi do
         end
       end
     end
-    
+
   end
 
   describe 'create' do
@@ -107,9 +107,9 @@ describe SalesforceBulkApi do
   describe 'delete' do
     pending
   end
-  
+
   describe 'query' do
-  
+
     context 'when there are results' do
       it 'returns the query results' do
         res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE 'Test%'")
@@ -125,21 +125,21 @@ describe SalesforceBulkApi do
         end
       end
     end
-  
+
     context 'when there are no results' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = 'ABC'")
         res['batches'][0]['response'].should eq nil
       end
     end
-    
+
     context 'when there is an error' do
       it 'returns nil' do
         res = @api.query('Account', "SELECT id From Account WHERE Name = ''ABC'")
         res['batches'][0]['response'].should eq nil
       end
     end
-    
+
   end
 
 end
