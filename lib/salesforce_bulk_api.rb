@@ -7,6 +7,7 @@ require 'xmlsimple'
 require 'csv'
 require 'salesforce_bulk_api/job'
 require 'salesforce_bulk_api/connection'
+require 'salesforce_bulk_api/authentication'
 
 module SalesforceBulkApi
   
@@ -15,6 +16,10 @@ module SalesforceBulkApi
     @@SALESFORCE_API_VERSION = '23.0'
 
     def initialize(client)
+      if client.is_a?(Hash)
+        client = SalesforceBulkApi::Authentication.new(client)
+        client = client.get_token
+      end
       @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
     end
 

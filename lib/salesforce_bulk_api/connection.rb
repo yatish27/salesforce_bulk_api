@@ -26,11 +26,14 @@ require 'timeout'
       client_type = @client.class.to_s
       case client_type
       when "Restforce::Data::Client"
-        @session_id=@client.options[:oauth_token]
-        @server_url=@client.options[:instance_url]
+        @session_id = @client.options[:oauth_token]
+        @server_url = @client.options[:instance_url]
+      when "OAuth2::AccessToken"
+        @session_id = @client.token
+        @server_url = @client.params["instance_url"]
       else
-        @session_id=@client.oauth_token
-        @server_url=@client.instance_url
+        @session_id = @client.oauth_token
+        @server_url = @client.instance_url
       end
       @instance = parse_instance()
       @@INSTANCE_HOST = "#{@instance}.salesforce.com"
@@ -74,7 +77,7 @@ require 'timeout'
     end
 
     def parse_instance()
-      @instance=@server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
       @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.blank?
       return @instance
     end
