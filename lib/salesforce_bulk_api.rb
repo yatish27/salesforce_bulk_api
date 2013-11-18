@@ -43,8 +43,6 @@ module SalesforceBulkApi
       self.do_operation('query', sobject, query, nil, true, timeout, batch_size)
     end
 
-    #private
-
     def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false, no_null_list = [])
       job = SalesforceBulkApi::Job.new(operation, sobject, records, external_field, @connection)
 

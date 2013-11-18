@@ -9,10 +9,9 @@ require 'timeout'
     @@INSTANCE_HOST = nil # Gets set in login()
 
     def initialize(api_version,client)
-      @client=client
+      @client = client
       @session_id = nil
       @server_url = nil
-      @instance = nil
       @@API_VERSION = api_version
       @@LOGIN_PATH = "/services/Soap/u/#{@@API_VERSION}"
       @@PATH_PREFIX = "/services/async/#{@@API_VERSION}/"
@@ -35,8 +34,8 @@ require 'timeout'
         @session_id = @client.oauth_token
         @server_url = @client.instance_url
       end
-      @instance = parse_instance()
-      @@INSTANCE_HOST = "#{@instance}.salesforce.com"
+      instance = parse_instance()
+      @@INSTANCE_HOST = "#{instance}.salesforce.com"
     end
 
     def post_xml(host, path, xml, headers)
@@ -77,11 +76,10 @@ require 'timeout'
     end
 
     def parse_instance()
-      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
-      @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.blank?
-      return @instance
+      instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.blank?
+      return instance
     end
 
   end
-
 end
