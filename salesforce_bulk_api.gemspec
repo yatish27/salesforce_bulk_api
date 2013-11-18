@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency(%q<json>, [">= 0"])
   s.add_dependency(%q<xml-simple>, [">= 0"])
+  s.add_dependency(%q<oauth2>, ["~> 0.9.2"])
   
   s.add_development_dependency "rspec"
   s.add_development_dependency("webmock", ["~> 1.13"])
