@@ -148,8 +148,9 @@ module SalesforceBulkApi
                 if batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
                   state << (batch_state)
                   @batch_ids.delete(batch_id)
+                else
+                  sleep(3) # wait x seconds and check again
                 end
-                sleep(3) # wait x seconds and check again
               end
               break if @batch_ids.empty?
             else
