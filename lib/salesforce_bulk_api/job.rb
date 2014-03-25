@@ -31,7 +31,7 @@ module SalesforceBulkApi
 
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
-      @job_id = response_parsed['id'][0]
+      @job_id = response_parsed['jobInfo']['id']
     end
 
     def close_job()
