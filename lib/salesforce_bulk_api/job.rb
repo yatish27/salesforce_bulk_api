@@ -31,7 +31,12 @@ module SalesforceBulkApi
 
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
-      @job_id = response_parsed['jobInfo']['id']
+
+      begin
+        @job_id = response_parsed['jobInfo']['id']
+      rescue NoMethodError => e
+        Rails.logger.error "SalesforceBulkApi: #{response_parsed['error']['exceptionCode']}: #{response_parsed['error']['exceptionMessage']}"
+      end
     end
 
     def close_job()
@@ -86,10 +91,27 @@ module SalesforceBulkApi
       response_parsed['id'][0] if response_parsed['id']
     end
 
+    def build_sobject(data)
+      xml = '<sObject>'
+      data.keys.each do |k|
+        if k.is_a?(Hash)
+          xml += build_sobject(k)
+        elsif data[k] != :type
+          #xml += "<type>#{data[:type]}</type>"
+          xml += "<#{k}>#{data[k]}</#{k}>"
+        end
+      end
+      xml += '</sObject>'
+    end
+
     def create_sobject(keys, r)
       sobject_xml = '<sObject>'
       keys.each do |k|
-        if !r[k].to_s.empty?
+        if r[k].is_a?(Hash)
+          sobject_xml += "<#{k}>"
+          sobject_xml += build_sobject(r[k])
+          sobject_xml += "</#{k}>"
+        elsif !r[k].to_s.empty?
           sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
             sobject_xml += r[k].encode(:xml => :text)
