@@ -32,11 +32,8 @@ module SalesforceBulkApi
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
 
-      begin
-        @job_id = response_parsed['jobInfo']['id']
-      rescue NoMethodError => e
-        Rails.logger.error "SalesforceBulkApi: #{response_parsed['error']['exceptionCode']}: #{response_parsed['error']['exceptionMessage']}"
-      end
+      @job_id = response_parsed['id'][0]
+
     end
 
     def close_job()
