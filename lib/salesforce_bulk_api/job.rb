@@ -2,6 +2,8 @@ module SalesforceBulkApi
 
   class Job
 
+    class SalesforceException < StandardError; end
+
     def initialize(operation, sobject, records, external_field, connection)
       @operation      = operation
       @sobject        = sobject
@@ -31,6 +33,9 @@ module SalesforceBulkApi
 
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
+
+      # response may contain an exception, so raise it
+      raise SalesforceException.new("#{response_parsed['exceptionMessage'][0]} (#{response_parsed['exceptionCode'][0]})") if response_parsed['exceptionCode']
 
       @job_id = response_parsed['id'][0]
 
