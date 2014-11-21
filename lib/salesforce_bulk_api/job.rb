@@ -117,6 +117,8 @@ module SalesforceBulkApi
           sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
             sobject_xml += r[k].encode(:xml => :text)
+          elsif r[k].respond_to?(:iso8601) # timestamps
+            sobject_xml += r[k].iso8601.to_s
           else
             sobject_xml += r[k].to_s
           end
