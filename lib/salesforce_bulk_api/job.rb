@@ -1,10 +1,12 @@
 module SalesforceBulkApi
 
   class Job
+    attr_reader :job_id
 
     class SalesforceException < StandardError; end
 
-    def initialize(operation, sobject, records, external_field, connection)
+    def initialize(operation: nil, sobject: nil, records: nil, external_field: nil, connection: nil, job_id: nil)
+      @job_id         = job_id
       @operation      = operation
       @sobject        = sobject
       @external_field = external_field
@@ -13,6 +15,8 @@ module SalesforceBulkApi
       @batch_ids      = []
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
+
+
 
     def create_job(batch_size, send_nulls, no_null_list)
       @batch_size = batch_size
@@ -117,6 +121,8 @@ module SalesforceBulkApi
           sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
             sobject_xml += r[k].encode(:xml => :text)
+          elsif r[k].respond_to?(:iso8601) # timestamps
+            sobject_xml += r[k].iso8601.to_s
           else
             sobject_xml += r[k].to_s
           end
