@@ -12,7 +12,7 @@ module SalesforceBulkApi
 
   class Api
 
-    @@SALESFORCE_API_VERSION = '23.0'
+    @@SALESFORCE_API_VERSION = '32.0'
 
     def initialize(client)
       @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
