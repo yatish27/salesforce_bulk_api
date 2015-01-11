@@ -22,7 +22,7 @@ describe SalesforceBulkApi do
   describe 'upsert' do
 
     context 'when not passed get_result' do
-      it "doesn't return the batches array" do        
+      it "doesn't return the batches array" do
         res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id')
         res['batches'].should be_nil
       end
