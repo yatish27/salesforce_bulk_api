@@ -5,3 +5,4 @@ Gemfile.lock
 .ruby-version
 pkg/*
 auth_credentials.yml
+*.swp

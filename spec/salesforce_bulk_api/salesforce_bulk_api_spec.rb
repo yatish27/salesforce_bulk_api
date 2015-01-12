@@ -1,5 +1,10 @@
 require 'spec_helper'
 require 'yaml'
+
+# require active_support before databasedotcom gem to fix the following error:
+# active_support/core_ext/module/deprecation.rb:21:in `deprecate': uninitialized constant ActiveSupport::Deprecation (NameError)
+require 'active_support'
+
 require 'databasedotcom'
 
 describe SalesforceBulkApi do
@@ -22,7 +27,7 @@ describe SalesforceBulkApi do
   describe 'upsert' do
 
     context 'when not passed get_result' do
-      it "doesn't return the batches array" do        
+      it "doesn't return the batches array" do
         res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id')
         res['batches'].should be_nil
       end
