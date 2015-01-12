@@ -1,5 +1,10 @@
 require 'spec_helper'
 require 'yaml'
+
+# require active_support before databasedotcom gem to fix the following error:
+# active_support/core_ext/module/deprecation.rb:21:in `deprecate': uninitialized constant ActiveSupport::Deprecation (NameError)
+require 'active_support'
+
 require 'databasedotcom'
 
 describe SalesforceBulkApi do
