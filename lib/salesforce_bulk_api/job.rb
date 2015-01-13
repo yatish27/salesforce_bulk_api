@@ -69,7 +69,7 @@ module SalesforceBulkApi
 
     def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
-      keys = @records.reduce({}) {|h,pairs| pairs.each {|k,v| (h[k] ||= []) << v}; h}.keys
+      keys = @records.reduce({}) {|h, pairs| pairs.each {|k, v| (h[k] ||= []) << v}; h}.keys
 
       @records_dup = @records.clone
 
@@ -103,7 +103,6 @@ module SalesforceBulkApi
         if k.is_a?(Hash)
           xml += build_sobject(k)
         elsif data[k] != :type
-          #xml += "<type>#{data[:type]}</type>"
           xml += "<#{k}>#{data[k]}</#{k}>"
         end
       end

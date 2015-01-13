@@ -15,28 +15,28 @@ module SalesforceBulkApi
     @@SALESFORCE_API_VERSION = '32.0'
 
     def initialize(client)
-      @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION,client)
+      @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION, client)
       @listeners = { job_created: [] }
     end
 
     def upsert(sobject, records, external_field, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      self.do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size, send_nulls, no_null_list)
+      do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size, send_nulls, no_null_list)
     end
 
     def update(sobject, records, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      self.do_operation('update', sobject, records, nil, get_response, timeout, batch_size, send_nulls, no_null_list)
+      do_operation('update', sobject, records, nil, get_response, timeout, batch_size, send_nulls, no_null_list)
     end
 
     def create(sobject, records, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
-      self.do_operation('insert', sobject, records, nil, get_response, timeout, batch_size, send_nulls)
+      do_operation('insert', sobject, records, nil, get_response, timeout, batch_size, send_nulls)
     end
 
     def delete(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
-      self.do_operation('delete', sobject, records, nil, get_response, timeout, batch_size)
+      do_operation('delete', sobject, records, nil, get_response, timeout, batch_size)
     end
 
     def query(sobject, query, batch_size = 10000, timeout = 1500)
-      self.do_operation('query', sobject, query, nil, true, timeout, batch_size)
+      do_operation('query', sobject, query, nil, true, timeout, batch_size)
     end
 
     ##
