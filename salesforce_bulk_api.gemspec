@@ -14,14 +14,13 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = 'salesforce_bulk_api'
 
-  s.add_dependency(%q<json>, ['>= 0'])
-  s.add_dependency(%q<xml-simple>, ['>= 0'])
+  s.add_dependency('json', ['>= 0'])
+  s.add_dependency('xml-simple', ['>= 0'])
 
   s.add_development_dependency 'rspec'
-  s.add_development_dependency('webmock', ['~> 1.13'])
-  s.add_development_dependency('vcr', ['~> 2.5'])
-  s.add_development_dependency 'databasedotcom'
+  s.add_development_dependency 'restforce', '~> 1.5.1'
   s.add_development_dependency 'rake', '~> 10.4.2'
+  s.add_development_dependency 'pry'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

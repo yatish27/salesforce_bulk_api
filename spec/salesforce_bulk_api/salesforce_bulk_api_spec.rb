@@ -1,19 +1,20 @@
 require 'spec_helper'
 require 'yaml'
-
-# require active_support before databasedotcom gem to fix the following error:
-# active_support/core_ext/module/deprecation.rb:21:in `deprecate': uninitialized constant ActiveSupport::Deprecation (NameError)
-require 'active_support'
-
-require 'databasedotcom'
+require 'restforce'
 
 describe SalesforceBulkApi do
 
   before :each do
-    auth_hash = YAML.load(File.read('auth_credentials.yml'))
-    @sf_client = Databasedotcom::Client.new(:client_id     => auth_hash['salesforce']['client_id'],
-                                            :client_secret => auth_hash['salesforce']['client_secret'])
-    @sf_client.authenticate(:username => auth_hash['salesforce']['user'], :password => auth_hash['salesforce']['passwordandtoken'])
+    auth_hash = YAML.load_file('auth_credentials.yml')
+    sfdc_auth_hash = auth_hash['salesforce']
+
+    @sf_client = Restforce.new(
+      username: sfdc_auth_hash['user'],
+      password: sfdc_auth_hash['passwordandtoken'],
+      client_id: sfdc_auth_hash['client_id'],
+      client_secret: sfdc_auth_hash['client_secret'],
+      host: sfdc_auth_hash['host'])
+    @sf_client.authenticate!
 
     @account_id = auth_hash['salesforce']['test_account_id']
 
@@ -144,13 +145,10 @@ describe SalesforceBulkApi do
         res['batches'][0]['response'].length.should > 1
         res['batches'][0]['response'][0]['Id'].should_not be_nil
       end
+
       context 'and there are multiple batches' do
-        it 'returns the query results in a merged hash' do
-          pending 'need dev to create > 10k records in dev organization'
-          res = @api.query('Account', "SELECT id, Name From Account WHERE Name LIKE 'Test%'")
-          res['batches'][0]['response'].length.should > 1
-          res['batches'][0]['response'][0]['Id'].should_not be_nil
-        end
+        # need dev to create > 10k records in dev organization
+        it 'returns the query results in a merged hash'
       end
     end
 
