@@ -168,4 +168,26 @@ describe SalesforceBulkApi do
 
   end
 
+  describe 'counters' do
+    context 'when read operations are called' do
+      it 'increments operation count and http GET count' do
+        @api.counters[:http_get].should eq 0
+        @api.counters[:query].should eq 0
+        @api.query('Account', "SELECT Website, Phone From Account WHERE Id = '#{@account_id}'")
+        @api.counters[:http_get].should eq 1
+        @api.counters[:query].should eq 1
+      end
+    end
+
+    context 'when update operations are called' do
+      it 'increments operation count and http POST count' do
+        @api.counters[:http_post].should eq 0
+        @api.counters[:update].should eq 0
+        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], true)
+        @api.counters[:http_post].should eq 1
+        @api.counters[:update].should eq 1
+      end
+    end
+  end
+
 end
