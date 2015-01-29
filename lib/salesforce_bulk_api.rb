@@ -82,7 +82,7 @@ module SalesforceBulkApi
 
     def count(name)
       @counters ||= Hash.new(0)
-      @counters[name]
+      @counters[name] += 1
     end
 
   end

@@ -81,8 +81,8 @@ require 'timeout'
 
     def counters
       {
-        get: @connection.counters[:get],
-        post: @connection.counters[:post]
+        get: @counters[:get],
+        post: @counters[:post]
       }
     end
 
@@ -90,7 +90,7 @@ require 'timeout'
 
     def count(name)
       @counters ||= Hash.new(0)
-      @counters[name]
+      @counters[name] += 1
     end
 
   end
