@@ -20,8 +20,6 @@ require 'timeout'
       login()
     end
 
-    #private
-
     def login()
       client_type = @client.class.to_s
       case client_type
@@ -37,6 +35,7 @@ require 'timeout'
     end
 
     def post_xml(host, path, xml, headers)
+      count :post
       host = host || @@INSTANCE_HOST
       if host != @@LOGIN_HOST # Not login, need to add session id to header
         headers['X-SFDC-Session'] = @session_id;
@@ -58,6 +57,7 @@ require 'timeout'
     end
 
     def get_request(host, path, headers)
+      count :get
       host = host || @@INSTANCE_HOST
       path = "#{@@PATH_PREFIX}#{path}"
       if host != @@LOGIN_HOST # Not login, need to add session id to header
@@ -77,6 +77,20 @@ require 'timeout'
       @instance=@server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
       @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
       return @instance
+    end
+
+    def counters
+      {
+        get: @counters[:get],
+        post: @counters[:post]
+      }
+    end
+
+    private
+
+    def count(name)
+      @counters ||= Hash.new(0)
+      @counters[name] += 1
     end
 
   end
