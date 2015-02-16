@@ -1,16 +1,18 @@
 require 'rubygems'
 require 'bundler'
 Bundler.require()
-require "salesforce_bulk_api/version"
+require 'salesforce_bulk_api/version'
 require 'net/https'
 require 'xmlsimple'
 require 'csv'
+require 'salesforce_bulk_api/concerns/throttling'
 require 'salesforce_bulk_api/job'
 require 'salesforce_bulk_api/connection'
 
 module SalesforceBulkApi
 
   class Api
+    attr_reader :connection
 
     @@SALESFORCE_API_VERSION = '32.0'
 
