@@ -50,7 +50,7 @@ OR
 	salesforce = SalesforceBulkApi::Api.new(client)
 
 
-Sample operations:
+### Sample operations:
 
     # Insert/Create
     # Add as many fields per record as needed.
@@ -82,21 +82,26 @@ Sample operations:
     # Query
 	res = salesforce.query("Account", "select id, name, createddate from Account limit 3") # We just need to pass the sobject name and the query string
 
-Helpful methods:
+### Helpful methods:
 
     # Check status of a job via #job_from_id
 	job = salesforce.job_from_id('a00A0001009zA2m') # Returns a SalesforceBulkApi::Job instance
 	puts "status is: #{job.check_job_status.inspect}"
 
-
-Listening to events:
+### Listening to events:
 
     # A job is created
     # Useful when you need to store the job_id before any work begins, then if you fail during a complex load scenario, you can wait for your
     # previous job(s) to finish.
-  salesforce.on_job_created do |job|
-    puts "Job #{job.job_id} created!"
-  end
+    salesforce.on_job_created do |job|
+      puts "Job #{job.job_id} created!"
+    end
+
+### Throttling API calls:
+
+    # By default, this gem (and maybe your app driving it) will query job/batch statuses at an unbounded rate.  We
+    # can fix that, e.g.:
+    salesforce.connection.set_status_throttle(30) # only check status of individual jobs/batches every 30 seconds
 
 ## Installation
 

@@ -2,6 +2,7 @@ module SalesforceBulkApi
 require 'timeout'
 
   class Connection
+    include Concerns::Throttling
 
     @@XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
     @@API_VERSION = nil
@@ -35,14 +36,15 @@ require 'timeout'
     end
 
     def post_xml(host, path, xml, headers)
-      count :post
       host = host || @@INSTANCE_HOST
       if host != @@LOGIN_HOST # Not login, need to add session id to header
-        headers['X-SFDC-Session'] = @session_id;
+        headers['X-SFDC-Session'] = @session_id
         path = "#{@@PATH_PREFIX}#{path}"
       end
       i = 0
       begin
+        count :post
+        throttle(http_method: :post, path: path)
         https(host).post(path, xml, headers).body
       rescue
         i += 1
@@ -57,12 +59,14 @@ require 'timeout'
     end
 
     def get_request(host, path, headers)
-      count :get
       host = host || @@INSTANCE_HOST
       path = "#{@@PATH_PREFIX}#{path}"
       if host != @@LOGIN_HOST # Not login, need to add session id to header
         headers['X-SFDC-Session'] = @session_id;
       end
+
+      count :get
+      throttle(http_method: :get, path: path)
       https(host).get(path, headers).body
     end
 
@@ -74,23 +78,20 @@ require 'timeout'
     end
 
     def parse_instance()
-      @instance=@server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
       @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
       return @instance
     end
 
     def counters
-      {
-        get: @counters[:get],
-        post: @counters[:post]
-      }
+      @counters.dup
     end
 
     private
 
-    def count(name)
+    def count(http_method)
       @counters ||= Hash.new(0)
-      @counters[name] += 1
+      @counters[http_method] += 1
     end
 
   end
