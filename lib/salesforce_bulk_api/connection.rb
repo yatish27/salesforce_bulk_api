@@ -84,14 +84,20 @@ require 'timeout'
     end
 
     def counters
-      @counters.dup
+      {
+        get: get_counters[:get],
+        post: get_counters[:post]
+      }
     end
 
     private
 
-    def count(http_method)
+    def get_counters
       @counters ||= Hash.new(0)
-      @counters[http_method] += 1
+    end
+
+    def count(http_method)
+      get_counters[http_method] += 1
     end
 
   end

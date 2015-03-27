@@ -45,11 +45,11 @@ module SalesforceBulkApi
       {
         http_get: @connection.counters[:get],
         http_post: @connection.counters[:post],
-        upsert: @counters[:upsert],
-        update: @counters[:update],
-        create: @counters[:create],
-        delete: @counters[:delete],
-        query: @counters[:query]
+        upsert: get_counters[:upsert],
+        update: get_counters[:update],
+        create: get_counters[:create],
+        delete: get_counters[:delete],
+        query: get_counters[:query]
       }
     end
 
@@ -81,10 +81,12 @@ module SalesforceBulkApi
     end
 
     private
+    def get_counters
+      @counters ||= Hash.new(0)
+    end
 
     def count(name)
-      @counters ||= Hash.new(0)
-      @counters[name] += 1
+      get_counters[name] += 1
     end
 
   end
