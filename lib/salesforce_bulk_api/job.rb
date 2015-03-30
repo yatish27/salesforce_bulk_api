@@ -5,13 +5,13 @@ module SalesforceBulkApi
 
     class SalesforceException < StandardError; end
 
-    def initialize(operation: nil, sobject: nil, records: nil, external_field: nil, connection: nil, job_id: nil)
-      @job_id         = job_id
-      @operation      = operation
-      @sobject        = sobject
-      @external_field = external_field
-      @records        = records
-      @connection     = connection
+    def initialize(args)
+      @job_id         = params[:job_id]
+      @operation      = params[:operation]
+      @sobject        = params[:sobject]
+      @external_field = params[:external_field]
+      @records        = params[:records]
+      @connection     = params[:connection]
       @batch_ids      = []
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
