@@ -11,7 +11,7 @@ module SalesforceBulkApi::Concerns
     end
 
     def set_status_throttle(limit_seconds)
-      set_throttle_limit_in_seconds(limit_seconds, [:http_method, :path], ->(details) { details[:path] == :get })
+      set_throttle_limit_in_seconds(limit_seconds, [:http_method, :path], ->(details) { details[:http_method] == :get })
     end
 
     def set_throttle_limit_in_seconds(limit_seconds, throttle_by_keys, only_if)
