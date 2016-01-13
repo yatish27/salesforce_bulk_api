@@ -9,16 +9,28 @@ require 'timeout'
     @@LOGIN_HOST = 'login.salesforce.com'
     @@INSTANCE_HOST = nil # Gets set in login()
 
-    def initialize(api_version,client)
+    def initialize(client)
       @client=client
       @session_id = nil
       @server_url = nil
       @instance = nil
-      @@API_VERSION = api_version
+      @@API_VERSION = determine_api_from_client(client) 
       @@LOGIN_PATH = "/services/Soap/u/#{@@API_VERSION}"
       @@PATH_PREFIX = "/services/async/#{@@API_VERSION}/"
 
       login()
+    end
+
+    def determine_api_from_client(client)
+      client_type = @client.class.to_s
+      case client_type
+      when "Restforce::Data::Client"
+        return client.options.fetch(:api_version,"32.0") # returns 32.0 if no api_version
+      when "Databasedotcom::Client"
+        return client.version
+      else
+        raise TypeError, "Client must be a restforce or databasedotcom client."
+      end
     end
 
     def login()

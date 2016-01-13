@@ -14,10 +14,8 @@ module SalesforceBulkApi
   class Api
     attr_reader :connection
 
-    @@SALESFORCE_API_VERSION = '32.0'
-
     def initialize(client)
-      @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION, client)
+      @connection = SalesforceBulkApi::Connection.new(client)
       @listeners = { job_created: [] }
     end
 

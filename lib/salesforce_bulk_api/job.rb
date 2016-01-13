@@ -12,6 +12,7 @@ module SalesforceBulkApi
       @external_field = args[:external_field]
       @records        = args[:records]
       @connection     = args[:connection]
+      @concurrency    = args.fetch(:concurrency,'Parallel')
       @batch_ids      = []
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
@@ -29,6 +30,7 @@ module SalesforceBulkApi
       if !@external_field.nil? # This only happens on upsert
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
+      xml += "<concurrencyMode>{@concurrency}</concurrencyMode>"
       xml += "<contentType>XML</contentType>"
       xml += "</jobInfo>"
 
