@@ -3,9 +3,9 @@ require 'timeout'
 
   class Connection
     include Concerns::Throttling
+    attr_reader :api_version
 
     @@XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
-    @@API_VERSION = nil
     @@LOGIN_HOST = 'login.salesforce.com'
     @@INSTANCE_HOST = nil # Gets set in login()
 
@@ -14,9 +14,9 @@ require 'timeout'
       @session_id = nil
       @server_url = nil
       @instance = nil
-      @@API_VERSION = determine_api_from_client(client) 
-      @@LOGIN_PATH = "/services/Soap/u/#{@@API_VERSION}"
-      @@PATH_PREFIX = "/services/async/#{@@API_VERSION}/"
+      @api_version = determine_api_from_client(client) 
+      @@LOGIN_PATH = "/services/Soap/u/#{@api_version}"
+      @@PATH_PREFIX = "/services/async/#{@api_version}/"
 
       login()
     end

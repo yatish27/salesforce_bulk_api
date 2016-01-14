@@ -13,7 +13,9 @@ describe SalesforceBulkApi do
       password: sfdc_auth_hash['passwordandtoken'],
       client_id: sfdc_auth_hash['client_id'],
       client_secret: sfdc_auth_hash['client_secret'],
-      host: sfdc_auth_hash['host'])
+      host: sfdc_auth_hash['host'],
+      api_version: sfdc_auth_hash.fetch('api_version', '32.0')
+    )
     @sf_client.authenticate!
 
     @account_id = auth_hash['salesforce']['test_account_id']
@@ -25,8 +27,25 @@ describe SalesforceBulkApi do
 
   end
 
-  describe 'upsert' do
+  describe 'options' do
+    context 'process jobs in serial mode when sent serial option in hash' do
+      it 'returns serial mode' do
+        res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id', {:concurrency => 'Serial'})
+        res['concurrencyMode'].should eq ["Serial"]
+      end
+    end
+  end
 
+  describe 'client' do
+    context 'api version' do
+      it 'gets set based on client, not constant' do
+        res = @api.query('Account', "SELECT Website, Phone From Account WHERE Id = '#{@account_id}'")
+        res['apiVersion'].should eq [@sf_client.options[:api_version]]
+      end
+    end
+  end
+
+  describe 'upsert' do
     context 'when not passed get_result' do
       it "doesn't return the batches array" do
         res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id')
@@ -34,9 +53,9 @@ describe SalesforceBulkApi do
       end
     end
 
-    context 'when passed get_result = true' do
+    context 'when passed get_response = true' do
       it 'returns the batches array' do
-        res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id', true)
+        res = @api.upsert('Account', [{:Id => @account_id, :Website => 'www.test.com'}], 'Id', {:get_response => true})
         res['batches'][0]['response'].is_a? Array
 
         res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
@@ -48,11 +67,11 @@ describe SalesforceBulkApi do
 
     context 'when passed send_nulls = true' do
       it 'sets the nil and empty attributes to NULL' do
-        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], true)
+        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], {:get_response => true})
         res = @api.query('Account', "SELECT Website, Phone From Account WHERE Id = '#{@account_id}'")
         res['batches'][0]['response'][0]['Website'][0].should eq 'abc123'
         res['batches'][0]['response'][0]['Phone'][0].should eq '5678'
-        res = @api.upsert('Account', [{:Id => @account_id, :Website => '', :Phone => nil}], 'Id', true, true)
+        res = @api.upsert('Account', [{:Id => @account_id, :Website => '', :Phone => nil}], 'Id', {:get_response => true, :send_nulls => true})
         res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
         res['batches'][0]['response'][0]['success'].should eq ['true']
         res['batches'][0]['response'][0]['created'].should eq ['false']
@@ -64,11 +83,11 @@ describe SalesforceBulkApi do
 
     context 'when passed send_nulls = true and an array of fields not to null' do
       it 'sets the nil and empty attributes to NULL, except for those included in the list of fields to ignore' do
-        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], true)
+        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], {:get_response => true})
         res = @api.query('Account', "SELECT Website, Phone From Account WHERE Id = '#{@account_id}'")
         res['batches'][0]['response'][0]['Website'][0].should eq 'abc123'
         res['batches'][0]['response'][0]['Phone'][0].should eq '5678'
-        res = @api.upsert('Account', [{:Id => @account_id, :Website => '', :Phone => nil}], 'Id', true, true, [:Website, :Phone])
+        res = @api.upsert('Account', [{:Id => @account_id, :Website => '', :Phone => nil}], 'Id', {:get_response => true, :send_nulls => true, :no_null_list => [:Website, :Phone]})
         res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
         res['batches'][0]['response'][0]['success'].should eq ['true']
         res['batches'][0]['response'][0]['created'].should eq ['false']
@@ -82,16 +101,16 @@ describe SalesforceBulkApi do
 
   describe 'update' do
     context 'when there is not an error' do
-      context 'when not passed get_result' do
+      context 'when not passed get_response' do
         it "doesnt return the batches array" do
           res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}])
           res['batches'].should be_nil
         end
       end
 
-      context 'when passed get_result = true' do
+      context 'when passed get_response = true' do
         it 'returns the batches array' do
-          res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}], true)
+          res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}], {:get_response => true})
           res['batches'][0]['response'].is_a? Array
           res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
           res['batches'][0]['response'][0]['success'].should eq ['true']
@@ -108,9 +127,9 @@ describe SalesforceBulkApi do
         end
       end
 
-      context 'when passed get_result = true with batches' do
+      context 'when passed get_response = true with batches' do
         it 'returns the results array' do
-          res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => 'abc123', :Website => 'www.test.com'}], true, false, [], 2)
+          res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => 'abc123', :Website => 'www.test.com'}], {:get_response => true, :batch_size => 2})
           res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
           res['batches'][0]['response'][0]['success'].should eq ['true']
           res['batches'][0]['response'][0]['created'].should eq ['false']
@@ -171,20 +190,22 @@ describe SalesforceBulkApi do
   describe 'counters' do
     context 'when read operations are called' do
       it 'increments operation count and http GET count' do
+        # queries fire multiple get_requests when checking for results 
         @api.counters[:http_get].should eq 0
         @api.counters[:query].should eq 0
         @api.query('Account', "SELECT Website, Phone From Account WHERE Id = '#{@account_id}'")
-        @api.counters[:http_get].should eq 1
+        @api.counters[:http_get].should eq 4
         @api.counters[:query].should eq 1
       end
     end
 
     context 'when update operations are called' do
       it 'increments operation count and http POST count' do
+        # updates fire multiple post_xml functions: create_job, add_batch, close_job, and get_job_result
         @api.counters[:http_post].should eq 0
         @api.counters[:update].should eq 0
-        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], true)
-        @api.counters[:http_post].should eq 1
+        @api.update('Account', [{:Id => @account_id, :Website => 'abc123', :Phone => '5678'}], {:get_response => true})
+        @api.counters[:http_post].should eq 3 
         @api.counters[:update].should eq 1
       end
     end
