@@ -1,7 +1,7 @@
 module SalesforceBulkApi
 
   class Job
-    attr_reader :job_id
+    attr_reader :job_id,:get_response
 
     class SalesforceException < StandardError; end
 
@@ -12,23 +12,26 @@ module SalesforceBulkApi
       @external_field = args[:external_field]
       @records        = args[:records]
       @connection     = args[:connection]
+      @concurrency    = args[:options].fetch(:concurrency,'Parallel')
+      @get_response   = args[:options].fetch(:get_response,false)
+      @timeout        = args[:options].fetch(:timeout,1500)
+      @batch_size     = args[:options].fetch(:batch_size,10000)
+      @send_nulls     = args[:options].fetch(:send_nulls,false)
+      @no_null_list   = args[:options].fetch(:no_null_list,[])
       @batch_ids      = []
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
 
 
 
-    def create_job(batch_size, send_nulls, no_null_list)
-      @batch_size = batch_size
-      @send_nulls = send_nulls
-      @no_null_list = no_null_list
-
+    def create_job()
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
       if !@external_field.nil? # This only happens on upsert
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
+      xml += "<concurrencyMode>#{@concurrency}</concurrencyMode>"
       xml += "<contentType>XML</contentType>"
       xml += "</jobInfo>"
 
@@ -165,11 +168,11 @@ module SalesforceBulkApi
       end
     end
 
-    def get_job_result(return_result, timeout)
+    def get_job_result()
       # timeout is in seconds
       begin
         state = []
-        Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
+        Timeout::timeout(@timeout, SalesforceBulkApi::JobTimeout) do
           while true
             if self.check_job_status['state'][0] == 'Closed'
               @batch_ids.each do |batch_id|
@@ -192,7 +195,7 @@ module SalesforceBulkApi
       end
 
       state.each_with_index do |batch_state, i|
-        if batch_state['state'][0] == 'Completed' && return_result == true
+        if batch_state['state'][0] == 'Completed' && @get_response
           state[i].merge!({'response' => self.get_batch_result(batch_state['id'][0])})
         end
       end

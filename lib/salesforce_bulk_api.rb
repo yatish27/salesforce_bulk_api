@@ -14,31 +14,29 @@ module SalesforceBulkApi
   class Api
     attr_reader :connection
 
-    @@SALESFORCE_API_VERSION = '32.0'
-
     def initialize(client)
-      @connection = SalesforceBulkApi::Connection.new(@@SALESFORCE_API_VERSION, client)
+      @connection = SalesforceBulkApi::Connection.new(client)
       @listeners = { job_created: [] }
     end
 
-    def upsert(sobject, records, external_field, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      do_operation('upsert', sobject, records, external_field, get_response, timeout, batch_size, send_nulls, no_null_list)
+    def upsert(sobject, records, external_field, options={})
+      do_operation('upsert', sobject, records, external_field, options) 
     end
 
-    def update(sobject, records, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      do_operation('update', sobject, records, nil, get_response, timeout, batch_size, send_nulls, no_null_list)
+    def update(sobject, records, options={}) 
+      do_operation('update', sobject, records, nil, options) 
     end
 
-    def create(sobject, records, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
-      do_operation('insert', sobject, records, nil, get_response, timeout, batch_size, send_nulls)
+    def create(sobject, records, options={}) 
+      do_operation('insert', sobject, records, nil, options) 
     end
 
-    def delete(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
-      do_operation('delete', sobject, records, nil, get_response, timeout, batch_size)
+    def delete(sobject, records, options={}) 
+      do_operation('delete', sobject, records, nil, options) 
     end
 
-    def query(sobject, query, batch_size = 10000, timeout = 1500)
-      do_operation('query', sobject, query, nil, true, timeout, batch_size)
+    def query(sobject, query, options={}) 
+      do_operation('query', sobject, query, nil, {get_response: true}.merge(options))
     end
 
     def counters
@@ -67,16 +65,16 @@ module SalesforceBulkApi
       SalesforceBulkApi::Job.new(job_id: job_id, connection: @connection)
     end
 
-    def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false, no_null_list = [])
+    def do_operation(operation, sobject, records, external_field, options)
       count operation.to_sym
 
-      job = SalesforceBulkApi::Job.new(operation: operation, sobject: sobject, records: records, external_field: external_field, connection: @connection)
+      job = SalesforceBulkApi::Job.new(operation: operation, sobject: sobject, records: records, external_field: external_field, connection: @connection,options: options)
 
-      job.create_job(batch_size, send_nulls, no_null_list)
+      job.create_job
       @listeners[:job_created].each {|callback| callback.call(job)}
       operation == "query" ? job.add_query() : job.add_batches()
       response = job.close_job
-      response.merge!({'batches' => job.get_job_result(get_response, timeout)}) if get_response == true
+      response.merge!({'batches' => job.get_job_result}) if job.get_response
       response
     end
 
