@@ -111,18 +111,18 @@ describe SalesforceBulkApi do
       context 'when passed get_result = true with batches' do
         it 'returns the results array' do
           res = @api.update('Account', [{:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => @account_id, :Website => 'www.test.com'}, {:Id => 'abc123', :Website => 'www.test.com'}], true, false, [], 2)
+
           res['batches'][0]['response'][0]['id'][0].should start_with(@account_id)
           res['batches'][0]['response'][0]['success'].should eq ['true']
           res['batches'][0]['response'][0]['created'].should eq ['false']
-
-          res['batches'][0]['response'][1].should eq({"errors"=>[{"fields"=>["Id"], "message"=>["Account ID: id value of incorrect type: abc123"], "statusCode"=>["MALFORMED_ID"]}], "success"=>["false"], "created"=>["false"]})
+          res['batches'][0]['response'][1]['id'][0].should start_with(@account_id)
+          res['batches'][0]['response'][1]['success'].should eq ['true']
+          res['batches'][0]['response'][1]['created'].should eq ['false']
 
           res['batches'][1]['response'][0]['id'][0].should start_with(@account_id)
           res['batches'][1]['response'][0]['success'].should eq ['true']
           res['batches'][1]['response'][0]['created'].should eq ['false']
-          res['batches'][1]['response'][1]['id'][0].should start_with(@account_id)
-          res['batches'][1]['response'][1]['success'].should eq ['true']
-          res['batches'][1]['response'][1]['created'].should eq ['false']
+          res['batches'][1]['response'][1].should eq({"errors"=>[{"fields"=>["Id"], "message"=>["Account ID: id value of incorrect type: abc123"], "statusCode"=>["MALFORMED_ID"]}], "success"=>["false"], "created"=>["false"]})
         end
       end
     end
