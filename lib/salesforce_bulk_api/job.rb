@@ -16,8 +16,6 @@ module SalesforceBulkApi
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
 
-
-
     def create_job(batch_size, send_nulls, no_null_list)
       @batch_size = batch_size
       @send_nulls = send_nulls
@@ -26,7 +24,8 @@ module SalesforceBulkApi
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
-      if !@external_field.nil? # This only happens on upsert
+      # This only happens on upsert
+      if !@external_field.nil?
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
       xml += "<contentType>XML</contentType>"
@@ -42,7 +41,6 @@ module SalesforceBulkApi
       raise SalesforceException.new("#{response_parsed['exceptionMessage'][0]} (#{response_parsed['exceptionCode'][0]})") if response_parsed['exceptionCode']
 
       @job_id = response_parsed['id'][0]
-
     end
 
     def close_job()
@@ -74,7 +72,7 @@ module SalesforceBulkApi
       @records_dup = @records.clone
 
       super_records = []
-      (@records_dup.size/@batch_size).to_i.times do
+      (@records_dup.size / @batch_size).to_i.times do
         super_records << @records_dup.pop(@batch_size)
       end
       super_records << @records_dup unless @records_dup.empty?

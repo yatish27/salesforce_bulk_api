@@ -4,19 +4,12 @@ require 'timeout'
   class Connection
     include Concerns::Throttling
 
-    @@XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
-    @@API_VERSION = nil
-    @@LOGIN_HOST = 'login.salesforce.com'
-    @@INSTANCE_HOST = nil # Gets set in login()
+    LOGIN_HOST = 'login.salesforce.com'
 
-    def initialize(api_version,client)
-      @client=client
-      @session_id = nil
-      @server_url = nil
-      @instance = nil
-      @@API_VERSION = api_version
-      @@LOGIN_PATH = "/services/Soap/u/#{@@API_VERSION}"
-      @@PATH_PREFIX = "/services/async/#{@@API_VERSION}/"
+    def initialize(api_version, client)
+      @client = client
+      @api_version = api_version
+      @path_prefix = "/services/async/#{@api_version}/"
 
       login()
     end
@@ -25,21 +18,21 @@ require 'timeout'
       client_type = @client.class.to_s
       case client_type
       when "Restforce::Data::Client"
-        @session_id=@client.options[:oauth_token]
-        @server_url=@client.options[:instance_url]
+        @session_id = @client.options[:oauth_token]
+        @server_url = @client.options[:instance_url]
       else
-        @session_id=@client.oauth_token
-        @server_url=@client.instance_url
+        @session_id = @client.oauth_token
+        @server_url = @client.instance_url
       end
       @instance = parse_instance()
-      @@INSTANCE_HOST = "#{@instance}.salesforce.com"
+      @instance_host = "#{@instance}.salesforce.com"
     end
 
     def post_xml(host, path, xml, headers)
-      host = host || @@INSTANCE_HOST
-      if host != @@LOGIN_HOST # Not login, need to add session id to header
+      host = host || @instance_host
+      if host != LOGIN_HOST # Not login, need to add session id to header
         headers['X-SFDC-Session'] = @session_id
-        path = "#{@@PATH_PREFIX}#{path}"
+        path = "#{@path_prefix}#{path}"
       end
       i = 0
       begin
@@ -59,9 +52,9 @@ require 'timeout'
     end
 
     def get_request(host, path, headers)
-      host = host || @@INSTANCE_HOST
-      path = "#{@@PATH_PREFIX}#{path}"
-      if host != @@LOGIN_HOST # Not login, need to add session id to header
+      host = host || @instance_host
+      path = "#{@path_prefix}#{path}"
+      if host != LOGIN_HOST # Not login, need to add session id to header
         headers['X-SFDC-Session'] = @session_id;
       end
 
