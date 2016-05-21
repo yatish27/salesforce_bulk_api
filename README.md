@@ -18,24 +18,15 @@ or add
    
 in your Gemfile
 
-There are two ways to authenticate with SalesForce to use the Bulk API: databasedotcom & restforce.
-Please check out the entire documentation of the gem you decide to use to learn the various ways of authentication.
+You should use the restforce gem to authenticate with Salesforce to use the Bulk API.
+Please check out the entire documentation of the restforce gem.
 
-[Databasedotcom](https://github.com/heroku/databasedotcom)
 [Restforce](https://github.com/ejholmes/restforce)
 
 
 You can use username password combo, OmniAuth, Oauth2
 You can use as many records possible in the Array. Governor limits are taken care of inside the gem.
 
-
-	require 'salesforce_bulk_api'
-	client = Databasedotcom::Client.new :client_id =>  SFDC_APP_CONFIG["client_id"], :client_secret => SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
-	client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
-
-    salesforce = SalesforceBulkApi::Api.new(client)
-
-OR
 
 	require 'salesforce_bulk_api'
 	client = Restforce.new(
