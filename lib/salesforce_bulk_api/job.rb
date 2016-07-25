@@ -138,6 +138,8 @@ module SalesforceBulkApi
           sobject_xml += "</#{k}>"
         elsif k.to_s.include? '.'
           sobject_xml += build_relationship_sobject(k, r[k])
+        elsif r[k] == '#N/A'
+          sobject_xml += "<#{k} xsi:nil=\"true\"/>"
         elsif !r[k].to_s.empty?
           sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
