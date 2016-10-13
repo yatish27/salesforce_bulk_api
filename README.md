@@ -46,7 +46,7 @@ OR
 	  client_secret:  SFDC_APP_CONFIG['SFDC_CLIENT_SECRET'].to_i,
 	  host:           SFDC_APP_CONFIG['SFDC_HOST']
 	)
-
+	client.authenticate!
 	salesforce = SalesforceBulkApi::Api.new(client)
 
 
