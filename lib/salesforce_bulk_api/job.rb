@@ -67,7 +67,6 @@ module SalesforceBulkApi
 
     def add_batches
       raise 'Records must be an array of hashes.' unless @records.is_a? Array
-      keys = @records.reduce({}) {|h, pairs| pairs.each {|k, v| (h[k] ||= []) << v}; h}.keys
 
       @records_dup = @records.clone
 
@@ -78,14 +77,14 @@ module SalesforceBulkApi
       super_records << @records_dup unless @records_dup.empty?
 
       super_records.each do |batch|
-        @batch_ids << add_batch(keys, batch)
+        @batch_ids << add_batch(batch)
       end
     end
 
-    def add_batch(keys, batch)
+    def add_batch(batch)
       xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
-        xml += create_sobject(keys, r)
+        xml += create_sobject(r)
       end
       xml += '</sObjects>'
       path = "job/#{@job_id}/batch/"
@@ -107,9 +106,9 @@ module SalesforceBulkApi
       xml += '</sObject>'
     end
 
-    def create_sobject(keys, r)
+    def create_sobject(r)
       sobject_xml = '<sObject>'
-      keys.each do |k|
+      r.keys.each do |k|
         if r[k].is_a?(Hash)
           sobject_xml += "<#{k}>"
           sobject_xml += build_sobject(r[k])
