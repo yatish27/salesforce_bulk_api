@@ -37,6 +37,8 @@ You can use as many records possible in the Array. Governor limits are taken car
 
 OR
 
+Username Password Combo:
+
 	require 'salesforce_bulk_api'
 	client = Restforce.new(
 	  username:       SFDC_APP_CONFIG['SFDC_USERNAME'],
@@ -49,6 +51,20 @@ OR
 	client.authenticate!
 	salesforce = SalesforceBulkApi::Api.new(client)
 
+OAuth2 Combo:
+
+	require 'salesforce_bulk_api'
+	client = Restforce.new(
+	  security_token: SFDC_APP_CONFIG['SFDC_SECURITY_TOKEN'],
+	  refresh_token:  SFDC_APP_CONFIG['SFDC_REFRESH_TOKEN'],
+	  client_id:      SFDC_APP_CONFIG['SFDC_CLIENT_ID'],
+	  client_secret:  SFDC_APP_CONFIG['SFDC_CLIENT_SECRET'].to_i,
+	  host:           SFDC_APP_CONFIG['SFDC_HOST']
+	)
+	client.authenticate!
+	salesforce = SalesforceBulkApi::Api.new(client)
+
+Note: The authenticate! method of Restforce requires the presence of username, password, client id and client secret in case of username-password mode of authentication and refresh token, client id and client secret if you are going the OAuth way for authenticating with Restforce. If those options are not set, you will receive 'No authentication middleware present' error.
 
 ### Sample operations:
 

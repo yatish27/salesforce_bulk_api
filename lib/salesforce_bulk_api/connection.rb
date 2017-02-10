@@ -71,8 +71,15 @@ require 'timeout'
     end
 
     def parse_instance()
-      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+
+    #Edited by AD to include scenarios where the domain name is something like 'ab12cdef' and the salesforce instance url is 'ab12cdef.my.salesforce.com'.
+    #In that case, as per the original case, the @instance variable will evaluate to 'ab12.salesforce.com' instead of 'ab12cdef.my.salesforce.com'.
+    #That would lead to this error --> "Failed to open TCP connection to ab12.salesforce.com:443 (getaddrinfo: Name or service not known)".
+    #In the following lines of code, we are checking to see if there is a '.' following the earlier regex to ensure that its not some fancy custom domain name.
+
+      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}\./).to_s.gsub("https://","").split(".")[0]
       @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
+    
       return @instance
     end
 
