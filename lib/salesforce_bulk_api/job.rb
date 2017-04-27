@@ -124,7 +124,7 @@ module SalesforceBulkApi
             sobject_xml += r[k].to_s
           end
           sobject_xml += "</#{k}>"
-        elsif @send_nulls && !@no_null_list.include?(k)
+        elsif @send_nulls && !@no_null_list.include?(k) && r.key?(k)
           sobject_xml += "<#{k} xsi:nil=\"true\"/>"
         end
       end
