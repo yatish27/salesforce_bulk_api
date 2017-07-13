@@ -169,12 +169,13 @@ module SalesforceBulkApi
         state = []
         Timeout::timeout(timeout, SalesforceBulkApi::JobTimeout) do
           while true
-            if self.check_job_status['state'][0] == 'Closed'
+            job_status = self.check_job_status
+            if job_status && job_status['state'] && job_status['state'][0] == 'Closed'
               batch_statuses = {}
 
               batches_ready = @batch_ids.all? do |batch_id|
                 batch_state = batch_statuses[batch_id] = self.check_batch_status(batch_id)
-                batch_state['state'][0] != "Queued" && batch_state['state'][0] != "InProgress"
+                batch_state && batch_state['state'] && batch_state['state'][0] && !['Queued', 'InProgress'].include?(batch_state['state'][0])
               end
 
               if batches_ready
