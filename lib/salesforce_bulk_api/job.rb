@@ -29,12 +29,11 @@ module SalesforceBulkApi
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
       xml += "<contentType>XML</contentType>"
-      xml += "<setConcurrencyMode>Serial</setConcurrencyMode>"
+      xml += "<ConcurrencyMode>Serial</ConcurrencyMode>"
       xml += "</jobInfo>"
 
       path = "job"
       headers = Hash['Content-Type' => 'application/xml; charset=utf-8']
-
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
 
