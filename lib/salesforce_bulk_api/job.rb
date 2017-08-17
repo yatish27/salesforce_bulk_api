@@ -23,15 +23,15 @@ module SalesforceBulkApi
 
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
+
       xml += "<object>#{@sobject}</object>"
       # This only happens on upsert
       if !@external_field.nil?
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
+      xml += "<concurrencyMode>Serial</concurrencyMode>"
       xml += "<contentType>XML</contentType>"
-      xml += "<ConcurrencyMode>Serial</ConcurrencyMode>"
       xml += "</jobInfo>"
-
       path = "job"
       headers = Hash['Content-Type' => 'application/xml; charset=utf-8']
       response = @connection.post_xml(nil, path, xml, headers)
