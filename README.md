@@ -1,37 +1,47 @@
 # Salesforce-Bulk-Api
 [![Gem Version](https://badge.fury.io/rb/salesforce_bulk_api.png)](http://badge.fury.io/rb/salesforce_bulk_api)
+
 ## Overview
 
-Salesforce bulk API is a simple ruby gem for connecting to and using the Salesforce Bulk API. It is actually a re-written code from [salesforce_bulk](https://github.com/jorgevaldivia/salesforce_bulk).Written to suit many more other features as well.
+`SalesforceBulkApi` is a ruby wrapper for the Salesforce Bulk API.
+It is rewritten from [salesforce_bulk](https://github.com/jorgevaldivia/salesforce_bulk).
+It adds some missing features of `salesforce_bulk`.
 
 ## How to use
 
 Using this gem is simple and straight forward.
 
-To initialize:
+### Install
 
-   `sudo gem install salesforce_bulk_api`
+   `gem install salesforce_bulk_api`
 
-or add
+or add it to your Gemfile
 
    `gem salesforce_bulk_api`
-   
-in your Gemfile
 
-There are two ways to authenticate with SalesForce to use the Bulk API: databasedotcom & restforce.
-Please check out the entire documentation of the gem you decide to use to learn the various ways of authentication.
+### Authenticate
+
+You can authenticate with Salesforce using two gems, `databasedotcom` & `restforce`.
+
+Please check the documentation of the respective gems to learn how to authenticate with Salesforce
 
 [Databasedotcom](https://github.com/heroku/databasedotcom)
 [Restforce](https://github.com/ejholmes/restforce)
-
 
 You can use username password combo, OmniAuth, Oauth2
 You can use as many records possible in the Array. Governor limits are taken care of inside the gem.
 
 ```ruby
 require 'salesforce_bulk_api'
-client = Databasedotcom::Client.new :client_id =>  SFDC_APP_CONFIG["client_id"], :client_secret => SFDC_APP_CONFIG["client_secret"] #client_id and client_secret respectively
-client.authenticate :token => "my-oauth-token", :instance_url => "http://na1.salesforce.com"  #=> "my-oauth-token"
+
+client = Databasedotcom::Client.new(
+  :client_id =>  SFDC_APP_CONFIG["client_id"],
+  :client_secret => SFDC_APP_CONFIG["client_secret"]
+)
+client.authenticate(
+  :token => "my-oauth-token",
+  :instance_url => "http://na1.salesforce.com"
+)
 
 salesforce = SalesforceBulkApi::Api.new(client)
 ```
@@ -49,6 +59,7 @@ client = Restforce.new(
   host:           SFDC_APP_CONFIG['SFDC_HOST']
 )
 client.authenticate!
+
 salesforce = SalesforceBulkApi::Api.new(client)
 ```
 
@@ -57,10 +68,10 @@ salesforce = SalesforceBulkApi::Api.new(client)
 ```ruby
 # Insert/Create
 # Add as many fields per record as needed.
-new_account = Hash["name" => "Test Account", "type" => "Other"] 
+new_account = Hash["name" => "Test Account", "type" => "Other"]
 records_to_insert = Array.new
 # You can add as many records as you want here, just keep in mind that Salesforce has governor limits.
-records_to_insert.push(new_account) 
+records_to_insert.push(new_account)
 result = salesforce.create("Account", records_to_insert)
 puts "result is: #{result.inspect}"
 
@@ -113,12 +124,6 @@ end
 salesforce.connection.set_status_throttle(30) # only check status of individual jobs/batches every 30 seconds
 ```
 
-## Installation
-
-```bash
-sudo gem install salesforce_bulk_api
-```
-	
 ## Contribute
 
 Feel to fork and send Pull request
