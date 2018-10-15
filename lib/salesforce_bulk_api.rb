@@ -52,12 +52,11 @@ module SalesforceBulkApi
       }
     end
 
-
-    ##
     # Allows you to attach a listener that accepts the created job (which has a useful #job_id field).  This is useful
     # for recording a job ID persistently before you begin batch work (i.e. start modifying the salesforce database),
     # so if the load process you are writing needs to recover, it can be aware of previous jobs it started and wait
     # for them to finish.
+    #
     def on_job_created(&block)
       @listeners[:job_created] << block
     end
@@ -70,11 +69,11 @@ module SalesforceBulkApi
       count operation.to_sym
 
       job = SalesforceBulkApi::Job.new(
-          operation: operation,
-          sobject: sobject,
-          records: records,
-          external_field: external_field,
-          connection: @connection
+        operation: operation,
+        sobject: sobject,
+        records: records,
+        external_field: external_field,
+        connection: @connection
       )
 
       job.create_job(batch_size, send_nulls, no_null_list)
@@ -86,6 +85,7 @@ module SalesforceBulkApi
     end
 
     private
+
     def get_counters
       @counters ||= Hash.new(0)
     end

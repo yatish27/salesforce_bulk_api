@@ -1,6 +1,6 @@
-module SalesforceBulkApi
 require 'timeout'
 
+module SalesforceBulkApi
   class Connection
     include Concerns::Throttling
 
@@ -70,12 +70,6 @@ require 'timeout'
       req
     end
 
-    def parse_instance()
-      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
-      @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
-      return @instance
-    end
-
     def counters
       {
         get: get_counters[:get],
@@ -91,6 +85,12 @@ require 'timeout'
 
     def count(http_method)
       get_counters[http_method] += 1
+    end
+
+    def parse_instance()
+      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}/).to_s.gsub("https://","")
+      @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
+      @instance
     end
 
   end

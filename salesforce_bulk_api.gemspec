@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency('xml-simple', ['>= 0'])
 
   s.add_development_dependency 'rspec'
-  s.add_development_dependency 'restforce', '~> 1.5.1'
+  s.add_development_dependency 'restforce', '~>  3.0.0'
   s.add_development_dependency 'rake', '~> 10.4.2'
   s.add_development_dependency 'pry'
 
