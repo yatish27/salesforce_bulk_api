@@ -11,11 +11,12 @@ require 'salesforce_bulk_api/connection'
 
 module SalesforceBulkApi
   class Api
-    attr_reader :connection
+    attr_reader :connection, :logger
 
     SALESFORCE_API_VERSION = '32.0'
 
-    def initialize(client)
+    def initialize(client, logger = nil)
+      @logger = logger
       @connection = SalesforceBulkApi::Connection.new(SALESFORCE_API_VERSION, client)
       @listeners = { job_created: [] }
     end
