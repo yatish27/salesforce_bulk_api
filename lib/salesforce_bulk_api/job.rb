@@ -7,6 +7,7 @@ module SalesforceBulkApi
 
     def initialize(args)
       @job_id         = args[:job_id]
+      @logger         = args[:logger]
       @operation      = args[:operation]
       @sobject        = args[:sobject]
       @external_field = args[:external_field]
@@ -88,7 +89,7 @@ module SalesforceBulkApi
         xml += create_sobject(keys, r)
       end
       xml += '</sObjects>'
-      logger.info("Xml sent to salesforce: #{xml}") if logger
+      @logger.info("Xml sent to salesforce: #{xml}") if @logger
       path = "job/#{@job_id}/batch/"
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
       response = @connection.post_xml(nil, path, xml, headers)

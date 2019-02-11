@@ -63,7 +63,7 @@ module SalesforceBulkApi
     end
 
     def job_from_id(job_id)
-      SalesforceBulkApi::Job.new(job_id: job_id, connection: @connection)
+      SalesforceBulkApi::Job.new(job_id: job_id, connection: @connection, logger: @logger)
     end
 
     def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false, no_null_list = [])
@@ -74,7 +74,8 @@ module SalesforceBulkApi
         sobject: sobject,
         records: records,
         external_field: external_field,
-        connection: @connection
+        connection: @connection,
+        logger: @logger
       )
 
       job.create_job(batch_size, send_nulls, no_null_list)
