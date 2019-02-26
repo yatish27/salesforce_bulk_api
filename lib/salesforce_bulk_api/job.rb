@@ -89,6 +89,7 @@ module SalesforceBulkApi
         xml += create_sobject(keys, r)
       end
       xml += '</sObjects>'
+      xml = I18n.transliterate(xml)
       @logger.info("Xml sent to salesforce: #{xml}") if @logger
       path = "job/#{@job_id}/batch/"
       headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
