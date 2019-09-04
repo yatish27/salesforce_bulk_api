@@ -224,6 +224,17 @@ module SalesforceBulkApi
       results
     end
 
+    def get_batch_records(batch_id)
+      path = "job/#{@job_id}/batch/#{batch_id}/request"
+      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+
+      response = @connection.get_request(nil, path, headers)
+      response_parsed = XmlSimple.xml_in(response)
+      results = response_parsed['sObject']
+
+      results
+    end
+
   end
 
   class JobTimeout < StandardError
