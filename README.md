@@ -116,6 +116,18 @@ salesforce.on_job_created do |job|
 end
 ```
 
+### Fetching records from a batch
+
+```ruby
+job_id = 'l02A0231009Za8m'
+batch_id = 'H24a0708089zA2J'
+salesforce.get_batch_records(job_id, batch_id)
+# => [{"Id"=>["RECORD_ID_1"], "AField__c"=>["123123"]},
+      {"Id"=>["RECORD_ID_2"], "AField__c"=>["123123"]},
+      {"Id"=>["RECORD_ID_3"], "AField__c"=>["123123"]}]
+
+```
+
 ### Throttling API calls:
 
 ```ruby
