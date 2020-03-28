@@ -100,11 +100,31 @@ module SalesforceBulkApi
       data.keys.each do |k|
         if k.is_a?(Hash)
           xml += build_sobject(k)
+        elsif k.to_s.include? '.'
+          relations = k.to_s.split('.')
+          parent = relations[0]
+          child = relations[1..-1].join('.')
+          xml += "<#{parent}>#{build_sobject({ child => data[k] })}</#{parent}>"
         elsif data[k] != :type
           xml += "<#{k}>#{data[k]}</#{k}>"
         end
       end
       xml += '</sObject>'
+    end
+
+    def build_relationship_sobject(key, value)
+      if key.to_s.include? '.'
+        relations = key.to_s.split('.')
+        parent = relations[0]
+        child = relations[1..-1].join('.')
+        xml = "<#{parent}>"
+        xml += "<sObject>"
+        xml += build_relationship_sobject(child, value)
+        xml += "</sObject>"
+        xml += "</#{parent}>"
+      else
+        xml = "<#{key}>#{value}</#{key}>"
+      end
     end
 
     def create_sobject(keys, r)
@@ -114,6 +134,8 @@ module SalesforceBulkApi
           sobject_xml += "<#{k}>"
           sobject_xml += build_sobject(r[k])
           sobject_xml += "</#{k}>"
+        elsif k.to_s.include? '.'
+          sobject_xml += build_relationship_sobject(k, r[k])
         elsif !r[k].to_s.empty?
           sobject_xml += "<#{k}>"
           if r[k].respond_to?(:encode)
