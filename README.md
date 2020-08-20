@@ -39,7 +39,7 @@ client = Databasedotcom::Client.new(
   :client_secret => SFDC_APP_CONFIG["client_secret"]
 )
 client.authenticate(
-  :token => "my-oauth-token",
+  :token => " ",
   :instance_url => "http://na1.salesforce.com"
 )
 
