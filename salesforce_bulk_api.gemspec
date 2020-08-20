@@ -12,14 +12,12 @@ Gem::Specification.new do |s|
   s.summary     = %q{It uses the bulk api of salesforce to communicate with Salesforce CRM}
   s.description = %q{Salesforce Bulk API with governor limits taken care of}
 
-  s.rubyforge_project = 'salesforce_bulk_api'
-
   s.add_dependency('json', ['>= 0'])
   s.add_dependency('xml-simple', ['>= 0'])
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'restforce', '~>  3.0.0'
-  s..add_development_dependency "rake", ">= 12.3.3"
+  s.add_development_dependency "rake", ">= 12.3.3"
   s.add_development_dependency 'pry'
 
   s.files         = `git ls-files`.split("\n")
