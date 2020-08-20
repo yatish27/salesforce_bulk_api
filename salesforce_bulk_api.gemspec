@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'restforce', '~>  3.0.0'
-  s.add_development_dependency 'rake', '~> 10.4.2'
+  s..add_development_dependency "rake", ">= 12.3.3"
   s.add_development_dependency 'pry'
 
   s.files         = `git ls-files`.split("\n")
