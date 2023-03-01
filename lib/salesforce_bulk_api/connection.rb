@@ -21,7 +21,7 @@ module SalesforceBulkApi
       case @client_type
       when RESTFORCE_CLIENT_TYPE
         # authenticate the client if it's not already authenticated
-        @client.authenticate! if @client.options[:oauth_token].empty? || @client.options[:instance_url].empty?
+        @client.authenticate! if @client.options[:oauth_token].nil? || @client.options[:instance_url].nil?
 
         @session_id = @client.options[:oauth_token]
         @server_url = @client.options[:instance_url]
