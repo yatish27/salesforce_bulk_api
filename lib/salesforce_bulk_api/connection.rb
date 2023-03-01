@@ -51,10 +51,10 @@ module SalesforceBulkApi
 
         count :post
         throttle(http_method: :post, path: path)
-        response = https(host).post(path, xml, headers).body
+        response = https(host).post(path, xml, headers)
         raise if response.code == '401'
 
-        response
+        response.body
       rescue
         raise if retried
 
@@ -75,10 +75,10 @@ module SalesforceBulkApi
 
         count :get
         throttle(http_method: :get, path: path)
-        response = https(host).get(path, headers).body
+        response = https(host).get(path, headers)
         raise if response.code == '401'
 
-        response
+        response.body
       rescue
         raise if retried
 
