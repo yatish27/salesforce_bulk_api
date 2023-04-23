@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name        = 'salesforce_bulk_api'
   s.version     = SalesforceBulkApi::VERSION
   s.authors     = ['Yatish Mehta']
-  s.email       = ['yatishmehta27@gmail.com']
+  s.email       = ['hi@example.com']
 
   s.homepage    = 'https://github.com/yatishmehta27/salesforce_bulk_api'
   s.summary     = %q{It uses the bulk api of salesforce to communicate with Salesforce CRM}
