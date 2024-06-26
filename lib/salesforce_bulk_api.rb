@@ -13,9 +13,10 @@ module SalesforceBulkApi
   class Api
     attr_reader :connection
 
-    def initialize(client, salesforce_api_version = "46.0")
+    def initialize(client, salesforce_api_version = "46.0", options = {})
       @connection = SalesforceBulkApi::Connection.new(salesforce_api_version, client)
       @listeners = { job_created: [] }
+      @options = options
     end
 
     def upsert(sobject, records, external_field, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
@@ -67,11 +68,13 @@ module SalesforceBulkApi
       count operation.to_sym
 
       job = SalesforceBulkApi::Job.new(
-        operation: operation,
-        sobject: sobject,
-        records: records,
-        external_field: external_field,
-        connection: @connection
+        {
+          operation: operation,
+          sobject: sobject,
+          records: records,
+          external_field: external_field,
+          connection: @connection
+        }.merge(extracted_job_options)
       )
 
       job.create_job(batch_size, send_nulls, no_null_list)
@@ -92,5 +95,8 @@ module SalesforceBulkApi
       get_counters[name] += 1
     end
 
+    def extracted_job_options
+       @options.slice(:concurrency_mode)
+    end
   end
 end
