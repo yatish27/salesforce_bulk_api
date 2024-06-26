@@ -25,6 +25,11 @@ describe SalesforceBulkApi do
 
   end
 
+  def clear_test_accounts(api)
+    res = api.query('Account', "SELECT id, Name From Account WHERE Name LIKE 'SalesforceBulkApi Test Account%'")
+    api.delete('Account', Array(res['batches'][0]['response']).map {|el| {'Id' => el['Id'].first } })
+  end
+
   describe 'upsert' do
 
     context 'when not passed get_result' do
@@ -80,6 +85,34 @@ describe SalesforceBulkApi do
 
   end
 
+  describe "api options" do
+    [
+      {
+        field: 'concurrencyMode', option: :concurrency_mode,  values: ["Parallel", "Serial", nil], default: 'Parallel'
+      },
+    ].each do |cases|
+      cases[:values].each do |value|
+        context "when passing #{cases[:option]} = #{value.inspect}" do
+          it "sets the #{cases[:field]} to '#{value || cases[:default]}'" do
+            api = SalesforceBulkApi::Api.new(@sf_client, '57.0', { cases[:option] => value })
+            res = api.create('Account', [{:name => 'SalesforceBulkApi Test Account'}], true)
+            update_response = api.update('Account', [{:Id => res['batches'][0]['response'][0]['id'][0], :Website => 'www.test.com'}], true)
+            delete_response = clear_test_accounts(api)
+            if value
+              res[cases[:field]].should eq [value]
+              delete_response[cases[:field]].should eq [value]
+              update_response[cases[:field]].should eq [value]
+            else
+              res[cases[:field]].should eq [cases[:default]]
+              delete_response[cases[:field]].should eq [cases[:default]]
+              update_response[cases[:field]].should eq [cases[:default]]
+            end
+          end
+        end
+      end
+    end
+  end
+
   describe 'update' do
     context 'when there is not an error' do
       context 'when not passed get_result' do
@@ -130,7 +163,27 @@ describe SalesforceBulkApi do
   end
 
   describe 'create' do
-    pending
+    after :each do
+      clear_test_accounts(@api)
+    end
+
+    context 'when not passed get_result' do
+      it "doesn't return the batches array" do
+        res = @api.create('Account', [{:name => 'SalesforceBulkApi Test Account'}])
+        res['concurrencyMode'].should eq ['Parallel']
+        res['batches'].should be_nil
+      end
+    end
+
+    context 'when passed get_result = true' do
+      it 'returns the batches array' do
+        res = @api.create('Account', [{:name => 'SalesforceBulkApi Test Account'}], true)
+        res['batches'][0]['response'].is_a? Array
+        res['batches'][0]['response'][0]['id'][0].should_not be_nil
+        res['batches'][0]['response'][0]['success'].should eq ['true']
+        res['batches'][0]['response'][0]['created'].should eq ['true']
+      end
+    end
   end
 
   describe 'delete' do

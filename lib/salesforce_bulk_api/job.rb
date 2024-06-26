@@ -12,6 +12,7 @@ module SalesforceBulkApi
       @external_field = args[:external_field]
       @records        = args[:records]
       @connection     = args[:connection]
+      @concurrency    = args[:concurrency_mode] || 'Parallel'
       @batch_ids      = []
       @XML_HEADER     = '<?xml version="1.0" encoding="utf-8" ?>'
     end
@@ -24,6 +25,7 @@ module SalesforceBulkApi
       xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
+      xml += "<concurrencyMode>#{@concurrency}</concurrencyMode>" if @operation.to_s =~ /(query|insert|delete|update)/i
       # This only happens on upsert
       if !@external_field.nil?
         xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
