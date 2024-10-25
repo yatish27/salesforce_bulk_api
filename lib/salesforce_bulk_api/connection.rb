@@ -1,20 +1,20 @@
-require 'timeout'
+require "timeout"
 
 module SalesforceBulkApi
   class Connection
     include Concerns::Throttling
 
-    LOGIN_HOST = 'login.salesforce.com'
+    LOGIN_HOST = "login.salesforce.com"
 
     def initialize(api_version, client)
       @client = client
       @api_version = api_version
       @path_prefix = "/services/async/#{@api_version}/"
 
-      login()
+      login
     end
 
-    def login()
+    def login
       client_type = @client.class.to_s
       case client_type
       when "Restforce::Data::Client"
@@ -24,14 +24,14 @@ module SalesforceBulkApi
         @session_id = @client.oauth_token
         @server_url = @client.instance_url
       end
-      @instance = parse_instance()
+      @instance = parse_instance
       @instance_host = "#{@instance}.salesforce.com"
     end
 
     def post_xml(host, path, xml, headers)
-      host = host || @instance_host
+      host ||= @instance_host
       if host != LOGIN_HOST # Not login, need to add session id to header
-        headers['X-SFDC-Session'] = @session_id
+        headers["X-SFDC-Session"] = @session_id
         path = "#{@path_prefix}#{path}"
       end
       i = 0
@@ -52,10 +52,10 @@ module SalesforceBulkApi
     end
 
     def get_request(host, path, headers)
-      host = host || @instance_host
+      host ||= @instance_host
       path = "#{@path_prefix}#{path}"
       if host != LOGIN_HOST # Not login, need to add session id to header
-        headers['X-SFDC-Session'] = @session_id;
+        headers["X-SFDC-Session"] = @session_id
       end
 
       count :get
@@ -87,12 +87,10 @@ module SalesforceBulkApi
       get_counters[http_method] += 1
     end
 
-    def parse_instance()
-      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}\./).to_s.gsub("https://","").split(".")[0]
+    def parse_instance
+      @instance = @server_url.match(/https:\/\/[a-z]{2}[0-9]{1,2}\./).to_s.gsub("https://", "").split(".")[0]
       @instance = @server_url.split(".salesforce.com")[0].split("://")[1] if @instance.nil? || @instance.empty?
       @instance
     end
-
   end
-
 end

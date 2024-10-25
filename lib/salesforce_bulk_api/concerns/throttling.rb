@@ -1,6 +1,5 @@
 module SalesforceBulkApi::Concerns
   module Throttling
-
     def throttles
       @throttles.dup
     end
@@ -48,13 +47,12 @@ module SalesforceBulkApi::Concerns
       @limits
     end
 
-    def throttle(details={})
+    def throttle(details = {})
       (@throttles || []).each do |callback|
         args = [details]
         args = args[0..callback.arity]
         callback.call(*args)
       end
     end
-
   end
 end
