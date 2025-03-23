@@ -41,8 +41,8 @@ module SalesforceBulkApi
       }
     end
 
-    # Allows you to attach a listener that accepts the created job (which has a useful #job_id field).  This is useful
-    # for recording a job ID persistently before you begin batch work (i.e. start modifying the salesforce database),
+    # Allows you to attach a listener that accepts the created job (which has a useful #job_id field).
+    # This is useful for recording a job ID persistently before you begin batch work (i.e. start modifying the salesforce database),
     # so if the load process you are writing needs to recover, it can be aware of previous jobs it started and wait
     # for them to finish.
     #
