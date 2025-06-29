@@ -7,3 +7,4 @@ pkg/*
 auth_credentials.yml
 *.swp
 .idea
+.env
