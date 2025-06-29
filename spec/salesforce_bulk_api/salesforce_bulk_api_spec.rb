@@ -1,26 +1,24 @@
 require "spec_helper"
 require "yaml"
 require "restforce"
+require "pry"
 
 describe SalesforceBulkApi do
   before :each do
-    auth_hash = YAML.load_file("auth_credentials.yml")
-    sfdc_auth_hash = auth_hash["salesforce"]
-
     @sf_client = Restforce.new(
-      username: sfdc_auth_hash["user"],
-      password: sfdc_auth_hash["passwordandtoken"],
-      client_id: sfdc_auth_hash["client_id"],
-      client_secret: sfdc_auth_hash["client_secret"],
-      host: sfdc_auth_hash["host"]
+      username: ENV["USER"],
+      password: ENV["PASSWORDANDTOKEN"],
+      client_id: ENV["CLIENT_ID"],
+      client_secret: ENV["CLIENT_SECRET"],
+      host: ENV["HOST"]
     )
+
     @sf_client.authenticate!
 
-    @account_id = auth_hash["salesforce"]["test_account_id"]
+    @account_id = ENV["TEST_ACCOUNT_ID"]
 
     @api = SalesforceBulkApi::Api.new(@sf_client)
   end
-
 
   describe "upsert" do
     context "when not passed get_result" do
