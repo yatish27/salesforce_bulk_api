@@ -16,37 +16,28 @@ module SalesforceBulkApi
     def initialize(client, salesforce_api_version = "46.0")
       @connection = SalesforceBulkApi::Connection.new(salesforce_api_version, client)
       @listeners = {job_created: []}
+      @counters = Hash.new(0)
     end
 
-    def upsert(sobject, records, external_field, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      do_operation("upsert", sobject, records, external_field, get_response, timeout, batch_size, send_nulls, no_null_list)
+    %w[upsert update create delete].each do |operation|
+      define_method(operation) do |sobject, records, external_field = nil, **options|
+        do_operation(operation, sobject, records, external_field, **options)
+      end
     end
 
-    def update(sobject, records, get_response = false, send_nulls = false, no_null_list = [], batch_size = 10000, timeout = 1500)
-      do_operation("update", sobject, records, nil, get_response, timeout, batch_size, send_nulls, no_null_list)
-    end
-
-    def create(sobject, records, get_response = false, send_nulls = false, batch_size = 10000, timeout = 1500)
-      do_operation("insert", sobject, records, nil, get_response, timeout, batch_size, send_nulls)
-    end
-
-    def delete(sobject, records, get_response = false, batch_size = 10000, timeout = 1500)
-      do_operation("delete", sobject, records, nil, get_response, timeout, batch_size)
-    end
-
-    def query(sobject, query, batch_size = 10000, timeout = 1500)
-      do_operation("query", sobject, query, nil, true, timeout, batch_size)
+    def query(sobject, query, **)
+      do_operation("query", sobject, query, nil, get_response: true, **)
     end
 
     def counters
       {
         http_get: @connection.counters[:get],
         http_post: @connection.counters[:post],
-        upsert: get_counters[:upsert],
-        update: get_counters[:update],
-        create: get_counters[:create],
-        delete: get_counters[:delete],
-        query: get_counters[:query]
+        upsert: @counters[:upsert],
+        update: @counters[:update],
+        create: @counters[:create],
+        delete: @counters[:delete],
+        query: @counters[:query]
       }
     end
 
@@ -63,8 +54,10 @@ module SalesforceBulkApi
       SalesforceBulkApi::Job.new(job_id: job_id, connection: @connection)
     end
 
-    def do_operation(operation, sobject, records, external_field, get_response, timeout, batch_size, send_nulls = false, no_null_list = [])
-      count operation.to_sym
+    private
+
+    def do_operation(operation, sobject, records, external_field, **options)
+      count(operation.to_sym)
 
       job = SalesforceBulkApi::Job.new(
         operation: operation,
@@ -74,22 +67,18 @@ module SalesforceBulkApi
         connection: @connection
       )
 
-      job.create_job(batch_size, send_nulls, no_null_list)
+      job.create_job(options[:batch_size], options[:send_nulls], options[:no_null_list])
       @listeners[:job_created].each { |callback| callback.call(job) }
+
       (operation == "query") ? job.add_query : job.add_batches
+
       response = job.close_job
-      response["batches"] = job.get_job_result(get_response, timeout) if get_response == true
+      response.merge!("batches" => job.get_job_result(options[:get_response], options[:timeout])) if options[:get_response]
       response
     end
 
-    private
-
-    def get_counters
-      @counters ||= Hash.new { |hash, key| hash[key] = 0 }
-    end
-
     def count(name)
-      get_counters[name] += 1
+      @counters[name] += 1
     end
   end
 end
