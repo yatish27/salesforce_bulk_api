@@ -80,7 +80,7 @@ module SalesforceBulkApi
     private
 
     def get_counters
-      @counters ||= Hash.new(0)
+      @counters ||= Hash.new { |hash, key| hash[key] = 0 }
     end
 
     def count(http_method)
