@@ -21,7 +21,6 @@ describe SalesforceBulkApi do
     @api = SalesforceBulkApi::Api.new(@sf_client)
   end
 
-
   describe "upsert" do
     context "when not passed get_result" do
       it "doesn't return the batches array" do
