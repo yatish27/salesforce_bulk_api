@@ -1,0 +1,63 @@
+name: Release Gem
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install
+
+      - name: Extract gem version
+        id: get_version
+        run: |
+          VERSION=$(ruby -r './lib/salesforce_bulk_api/version' -e 'puts SalesforceBulkApi::VERSION')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get latest Git tag
+        id: get_latest_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
+          echo "tag=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Check if version changed
+        id: version_check
+        run: |
+          if [ "${{ steps.get_version.outputs.version }}" = "${{ steps.get_latest_tag.outputs.tag }}" ]; then
+            echo "No version bump. Skipping release."
+            exit 1
+          fi
+
+      - name: Build gem
+        run: gem build salesforce_bulk_api.gemspec
+
+      - name: Push to RubyGems
+        run: gem push salesforce_bulk_api-*.gem
+        env:
+          RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+
+      - name: Tag and Push
+        run: |
+          git tag "v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          body_path: CHANGELOG.md
