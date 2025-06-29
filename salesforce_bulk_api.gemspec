@@ -19,8 +19,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "restforce", "~>  3.0.0"
   s.add_development_dependency "rake", ">= 12.3.3"
   s.add_development_dependency "pry"
-  s.add_development_dependency "rubocop"
-  s.add_development_dependency "dotenv"
+  s.add_development_dependency "standardrb"
 
   s.files = `git ls-files`.split("\n")
   s.executables = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
