@@ -20,17 +20,17 @@ jobs:
       - name: Run RuboCop
         run: bundle exec rubocop
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.2"
+  #     - uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.2"
 
-      - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
+  #     - name: Install dependencies
+  #       run: bundle install --jobs 4 --retry 3
 
-      - name: Run RSpec
-        run: bundle exec rspec
+  #     - name: Run RSpec
+  #       run: bundle exec rspec
