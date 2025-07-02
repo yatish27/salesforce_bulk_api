@@ -1,21 +1,21 @@
 require "spec_helper"
 require "yaml"
 require "restforce"
-require "pry"
 
 describe SalesforceBulkApi do
   before :each do
     @sf_client = Restforce.new(
-      username: ENV["USER"],
-      password: ENV["PASSWORDANDTOKEN"],
-      client_id: ENV["CLIENT_ID"],
-      client_secret: ENV["CLIENT_SECRET"],
-      host: ENV["HOST"]
+      username: ENV["SALESFORCE_USERNAME"],
+      password: ENV["SALESFORCE_PASSWORD"],
+      client_id: ENV["SALESFORCE_CLIENT_ID"],
+      client_secret: ENV["SALESFORCE_CLIENT_SECRET"],
+      host: ENV["SALESFORCE_HOST"],
+      security_token: ENV["SALESFORCE_SECURITY_TOKEN"]
     )
 
     @sf_client.authenticate!
 
-    @account_id = ENV["TEST_ACCOUNT_ID"]
+    @account_id = ENV["SALESFORCE_TEST_ACCOUNT_ID"]
 
     @api = SalesforceBulkApi::Api.new(@sf_client)
   end
