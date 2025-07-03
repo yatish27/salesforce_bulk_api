@@ -119,14 +119,6 @@ describe SalesforceBulkApi do
     end
   end
 
-  describe "create" do
-    pending
-  end
-
-  describe "delete" do
-    pending
-  end
-
   describe "query" do
     context "when there are results" do
       it "returns the query results" do
