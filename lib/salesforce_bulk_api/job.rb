@@ -22,14 +22,14 @@ module SalesforceBulkApi
       @no_null_list = no_null_list
 
       xml = "#{XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
-      xml += "<operation>#{@operation}</operation>"
-      xml += "<object>#{@sobject}</object>"
+      xml << "<operation>#{@operation}</operation>"
+      xml << "<object>#{@sobject}</object>"
       # This only happens on upsert
       if !@external_field.nil?
-        xml += "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
+        xml << "<externalIdFieldName>#{@external_field}</externalIdFieldName>"
       end
-      xml += "<contentType>XML</contentType>"
-      xml += "</jobInfo>"
+      xml << "<contentType>XML</contentType>"
+      xml << "</jobInfo>"
 
       path = "job"
       headers = {"Content-Type" => "application/xml; charset=utf-8"}
@@ -45,8 +45,8 @@ module SalesforceBulkApi
 
     def close_job
       xml = "#{XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
-      xml += "<state>Closed</state>"
-      xml += "</jobInfo>"
+      xml << "<state>Closed</state>"
+      xml << "</jobInfo>"
 
       path = "job/#{@job_id}"
       headers = {"Content-Type" => "application/xml; charset=utf-8"}
@@ -87,9 +87,9 @@ module SalesforceBulkApi
     def add_batch(keys, batch)
       xml = "#{XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
-        xml += create_sobject(keys, r)
+        xml << create_sobject(keys, r)
       end
-      xml += "</sObjects>"
+      xml << "</sObjects>"
       path = "job/#{@job_id}/batch/"
       headers = {"Content-Type" => "application/xml; charset=UTF-8"}
       response = @connection.post_xml(nil, path, xml, headers)
@@ -101,17 +101,17 @@ module SalesforceBulkApi
       xml = "<sObject>"
       data.keys.each do |k|
         if k.is_a?(Hash)
-          xml += build_sobject(k)
+          xml << build_sobject(k)
         elsif k.to_s.include? "."
           relations = k.to_s.split(".")
           parent = relations[0]
           child = relations[1..].join(".")
-          xml += "<#{parent}>#{build_sobject({child => data[k]})}</#{parent}>"
+          xml << "<#{parent}>#{build_sobject({child => data[k]})}</#{parent}>"
         elsif data[k] != :type
-          xml += "<#{k}>#{data[k]}</#{k}>"
+          xml << "<#{k}>#{data[k]}</#{k}>"
         end
       end
-      xml += "</sObject>"
+      xml << "</sObject>"
     end
 
     def build_relationship_sobject(key, value)
@@ -120,10 +120,10 @@ module SalesforceBulkApi
         parent = relations[0]
         child = relations[1..].join(".")
         xml = "<#{parent}>"
-        xml += "<sObject>"
-        xml += build_relationship_sobject(child, value)
-        xml += "</sObject>"
-        xml + "</#{parent}>"
+        xml << "<sObject>"
+        xml << build_relationship_sobject(child, value)
+        xml << "</sObject>"
+        xml << "</#{parent}>"
       else
         "<#{key}>#{value}</#{key}>"
       end
@@ -133,26 +133,26 @@ module SalesforceBulkApi
       sobject_xml = "<sObject>"
       keys.each do |k|
         if r[k].is_a?(Hash)
-          sobject_xml += "<#{k}>"
-          sobject_xml += build_sobject(r[k])
-          sobject_xml += "</#{k}>"
+          sobject_xml << "<#{k}>"
+          sobject_xml << build_sobject(r[k])
+          sobject_xml << "</#{k}>"
         elsif k.to_s.include? "."
-          sobject_xml += build_relationship_sobject(k, r[k])
+          sobject_xml << build_relationship_sobject(k, r[k])
         elsif !r[k].to_s.empty?
-          sobject_xml += "<#{k}>"
-          sobject_xml += if r[k].respond_to?(:encode)
+          sobject_xml << "<#{k}>"
+          sobject_xml << if r[k].respond_to?(:encode)
             r[k].encode(xml: :text)
           elsif r[k].respond_to?(:iso8601) # timestamps
             r[k].iso8601.to_s
           else
             r[k].to_s
           end
-          sobject_xml += "</#{k}>"
+          sobject_xml << "</#{k}>"
         elsif @send_nulls && !@no_null_list.include?(k) && r.key?(k)
-          sobject_xml += "<#{k} xsi:nil=\"true\"/>"
+          sobject_xml << "<#{k} xsi:nil=\"true\"/>"
         end
       end
-      sobject_xml += "</sObject>"
+      sobject_xml << "</sObject>"
       sobject_xml
     end
 
