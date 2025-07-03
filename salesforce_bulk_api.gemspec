@@ -14,12 +14,14 @@ Gem::Specification.new do |s|
   s.add_dependency("json", [">= 0"])
   s.add_dependency("xml-simple", [">= 0"])
   s.add_dependency("csv", [">= 0"])
+  s.add_dependency("logger", [">= 0"])
 
   s.add_development_dependency "rspec"
-  s.add_development_dependency "restforce", "~>  3.0.0"
+  s.add_development_dependency "restforce", "~> 8.0.0"
   s.add_development_dependency "rake", ">= 12.3.3"
   s.add_development_dependency "pry"
   s.add_development_dependency "rubocop"
+  s.add_development_dependency "rubocop-rake"
   s.add_development_dependency "dotenv"
 
   s.files = `git ls-files`.split("\n")

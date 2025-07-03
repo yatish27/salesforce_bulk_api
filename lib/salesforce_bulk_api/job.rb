@@ -4,6 +4,8 @@ module SalesforceBulkApi
 
     class SalesforceException < StandardError; end
 
+    XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
+
     def initialize(args)
       @job_id = args[:job_id]
       @operation = args[:operation]
@@ -12,7 +14,6 @@ module SalesforceBulkApi
       @records = args[:records]
       @connection = args[:connection]
       @batch_ids = []
-      @XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
     end
 
     def create_job(batch_size, send_nulls, no_null_list)
@@ -20,7 +21,7 @@ module SalesforceBulkApi
       @send_nulls = send_nulls
       @no_null_list = no_null_list
 
-      xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
+      xml = "#{XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<operation>#{@operation}</operation>"
       xml += "<object>#{@sobject}</object>"
       # This only happens on upsert
@@ -31,7 +32,7 @@ module SalesforceBulkApi
       xml += "</jobInfo>"
 
       path = "job"
-      headers = Hash["Content-Type" => "application/xml; charset=utf-8"]
+      headers = {"Content-Type" => "application/xml; charset=utf-8"}
 
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
@@ -43,12 +44,12 @@ module SalesforceBulkApi
     end
 
     def close_job
-      xml = "#{@XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
+      xml = "#{XML_HEADER}<jobInfo xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\">"
       xml += "<state>Closed</state>"
       xml += "</jobInfo>"
 
       path = "job/#{@job_id}"
-      headers = Hash["Content-Type" => "application/xml; charset=utf-8"]
+      headers = {"Content-Type" => "application/xml; charset=utf-8"}
 
       response = @connection.post_xml(nil, path, xml, headers)
       XmlSimple.xml_in(response)
@@ -56,7 +57,7 @@ module SalesforceBulkApi
 
     def add_query
       path = "job/#{@job_id}/batch/"
-      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      headers = {"Content-Type" => "application/xml; charset=UTF-8"}
 
       response = @connection.post_xml(nil, path, @records, headers)
       response_parsed = XmlSimple.xml_in(response)
@@ -84,13 +85,13 @@ module SalesforceBulkApi
     end
 
     def add_batch(keys, batch)
-      xml = "#{@XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+      xml = "#{XML_HEADER}<sObjects xmlns=\"http://www.force.com/2009/06/asyncapi/dataload\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
       batch.each do |r|
         xml += create_sobject(keys, r)
       end
       xml += "</sObjects>"
       path = "job/#{@job_id}/batch/"
-      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      headers = {"Content-Type" => "application/xml; charset=UTF-8"}
       response = @connection.post_xml(nil, path, xml, headers)
       response_parsed = XmlSimple.xml_in(response)
       response_parsed["id"][0] if response_parsed["id"]
@@ -104,7 +105,7 @@ module SalesforceBulkApi
         elsif k.to_s.include? "."
           relations = k.to_s.split(".")
           parent = relations[0]
-          child = relations[1..-1].join(".")
+          child = relations[1..].join(".")
           xml += "<#{parent}>#{build_sobject({child => data[k]})}</#{parent}>"
         elsif data[k] != :type
           xml += "<#{k}>#{data[k]}</#{k}>"
@@ -117,14 +118,14 @@ module SalesforceBulkApi
       if key.to_s.include? "."
         relations = key.to_s.split(".")
         parent = relations[0]
-        child = relations[1..-1].join(".")
+        child = relations[1..].join(".")
         xml = "<#{parent}>"
         xml += "<sObject>"
         xml += build_relationship_sobject(child, value)
         xml += "</sObject>"
-        xml += "</#{parent}>"
+        xml + "</#{parent}>"
       else
-        xml = "<#{key}>#{value}</#{key}>"
+        "<#{key}>#{value}</#{key}>"
       end
     end
 
@@ -191,7 +192,7 @@ module SalesforceBulkApi
       begin
         state = []
         Timeout.timeout(timeout, SalesforceBulkApi::JobTimeout) do
-          while true
+          loop do
             job_status = check_job_status
             if job_status && job_status["state"] && job_status["state"][0] == "Closed"
               batch_statuses = {}
@@ -214,7 +215,7 @@ module SalesforceBulkApi
           end
         end
       rescue SalesforceBulkApi::JobTimeout => e
-        puts 'Timeout waiting for Salesforce to process job batches #{@batch_ids} of job #{@job_id}.'
+        puts "Timeout waiting for Salesforce to process job batches #{@batch_ids} of job #{@job_id}."
         puts e
         raise
       end
@@ -229,7 +230,7 @@ module SalesforceBulkApi
 
     def get_batch_result(batch_id)
       path = "job/#{@job_id}/batch/#{batch_id}/result"
-      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      headers = {"Content-Type" => "application/xml; charset=UTF-8"}
 
       response = @connection.get_request(nil, path, headers)
       response_parsed = XmlSimple.xml_in(response)
@@ -238,8 +239,7 @@ module SalesforceBulkApi
       if @operation == "query" # The query op requires us to do another request to get the results
         result_id = response_parsed["result"][0]
         path = "job/#{@job_id}/batch/#{batch_id}/result/#{result_id}"
-        headers = {}
-        headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+        headers = {"Content-Type" => "application/xml; charset=UTF-8"}
         response = @connection.get_request(nil, path, headers)
         response_parsed = XmlSimple.xml_in(response)
         results = response_parsed["records"]
@@ -249,7 +249,7 @@ module SalesforceBulkApi
 
     def get_batch_records(batch_id)
       path = "job/#{@job_id}/batch/#{batch_id}/request"
-      headers = Hash["Content-Type" => "application/xml; charset=UTF-8"]
+      headers = {"Content-Type" => "application/xml; charset=UTF-8"}
 
       response = @connection.get_request(nil, path, headers)
       response_parsed = XmlSimple.xml_in(response)
