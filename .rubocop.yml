@@ -910,6 +910,13 @@ Metrics/PerceivedComplexity:
 Migration/DepartmentName:
   Enabled: true
 
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+
+plugins:
+  - rubocop-rake
+
 Naming/AccessorMethodName:
   Enabled: false
 
@@ -1902,3 +1909,19 @@ Style/YodaExpression:
 
 Style/ZeroLengthPredicate:
   Enabled: false
+
+# New cops configuration
+Lint/ArrayLiteralInRegexp:
+  Enabled: true
+Lint/CopDirectiveSyntax:
+  Enabled: true
+Lint/RedundantTypeConversion:
+  Enabled: true
+Lint/SuppressedExceptionInNumberConversion:
+  Enabled: true
+Lint/UselessConstantScoping:
+  Enabled: true
+Style/HashSlice:
+  Enabled: true
+Style/RedundantFormat:
+  Enabled: true
