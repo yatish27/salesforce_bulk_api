@@ -32,7 +32,12 @@ jobs:
         id: version_check
         run: |
           git fetch origin master
-          BASE_VERSION=$(git show origin/master:$(ls *.gemspec) | ruby -e "puts Gem::Specification::load(STDIN).version")
+          BASE_VERSION=$(git show origin/master:$(ls *.gemspec) | ruby -e "
+            require 'rubygems'
+            content = STDIN.read
+            spec = eval(content)
+            puts spec.version
+          ")
           if [ "${{ steps.get_version.outputs.version }}" != "$BASE_VERSION" ]; then
             echo "should_release=true" >> "$GITHUB_OUTPUT"
           else
