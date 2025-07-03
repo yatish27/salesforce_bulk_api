@@ -66,7 +66,7 @@ module SalesforceBulkApi
     end
 
     def add_batches
-      raise "Records must be an array of hashes." unless @records.is_a? Array
+      raise ArgumentError, "Records must be an array of hashes." unless @records.is_a? Array
       keys = @records.each_with_object({}) { |pairs, h|
         pairs.each { |k, v| (h[k] ||= []) << v }
       }.keys
