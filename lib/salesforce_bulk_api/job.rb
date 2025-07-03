@@ -4,7 +4,7 @@ module SalesforceBulkApi
 
     class SalesforceException < StandardError; end
 
-    XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'
+    XML_HEADER = '<?xml version="1.0" encoding="utf-8" ?>'.freeze
 
     def initialize(args)
       @job_id = args[:job_id]
